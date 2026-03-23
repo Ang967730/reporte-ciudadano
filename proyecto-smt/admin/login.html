@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acceso Institucional — SMT Chiapas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* "?"? RESET & VARIABLES "?"? */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --verde:   #2C5A4F;
+      --verde2:  #3D7568;
+      --guinda:  #6F1234;
+      --guinda2: #9B1F49;
+      --oro:     #C2A253;
+      --blanco:  #F8FAF9;
+      --gris:    #E4EAE8;
+      --texto:   #141818;
+      --sombra:  rgba(29,107,87,0.22);
+      --cycle:   18s;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--texto);
+      color: var(--blanco);
+      overflow: hidden;
+    }
+    body { perspective: 1000px; }
+
+    /* "?"? FONDO ANIMADO "?"? */
+    .bg-wrap {
+      position: fixed; inset: 0; z-index: 0;
+      background: #090b0d;
+      overflow: hidden;
+    }
+
+    .bg-wrap::before {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0; left: 0;
+      width: calc(100% - 480px);
+      background:
+        linear-gradient(rgba(10,16,15,0.18), rgba(10,16,15,0.32)),
+        url('https://i.pinimg.com/originals/92/fd/87/92fd87a9a10071f70eec07620a5e9307.jpg') 30% center / cover no-repeat;
+    }
+
+    .bg-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0; left: 0;
+      width: calc(100% - 480px);
+      background: linear-gradient(90deg, rgba(0,0,0,0.04), rgba(0,0,0,0.14));
+    }
+
+    .grid-lines {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(44,138,115,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(44,138,115,0.07) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: .24;
+    }
+
+    .system-scene{
+      position:absolute;
+      left:30px;
+      bottom:28px;
+      width:min(58vw,640px);
+      height:180px;
+      pointer-events:none;
+      z-index:1;
+      opacity:.86;
+      contain: layout paint style;
+    }
+    .pipeline{
+      position:absolute;
+      left:52px; right:56px; top:86px;
+      height:4px;
+      border-radius:20px;
+      background:linear-gradient(90deg, rgba(44,138,115,.78), rgba(194,162,83,.95), rgba(155,31,73,.86));
+      box-shadow: 0 0 14px rgba(194,162,83,.22);
+    }
+    .pipeline::after{
+      content:'';
+      position:absolute;
+      inset:-4px;
+      border-radius:20px;
+      border:1px solid rgba(248,250,249,.13);
+    }
+    .stage{
+      position:absolute;
+      top:64px;
+      width:44px; height:44px;
+      border-radius:50%;
+      border:1px solid rgba(248,250,249,.42);
+      background:linear-gradient(180deg, rgba(248,250,249,.3), rgba(248,250,249,.1));
+      box-shadow:0 10px 24px rgba(0,0,0,.34);
+      animation: stagePulse var(--cycle) ease-in-out infinite;
+    }
+    .stage::after{
+      content:attr(data-label);
+      position:absolute;
+      left:50%; top:54px;
+      transform:translateX(-50%);
+      font-size:10px;
+      font-weight:700;
+      letter-spacing:.08em;
+      color:rgba(248,250,249,.72);
+      white-space:nowrap;
+    }
+    .stage-1{ left:48px; animation-delay: 0s; }
+    .stage-2{ left:284px; animation-delay: 1.8s; }
+    .stage-3{ left:520px; animation-delay: 3.6s; }
+    .stage-1 i{ color: var(--verde2); }
+    .stage-2 i{ color: var(--oro); }
+    .stage-3 i{ color: var(--guinda2); }
+    .stage i{
+      position:absolute;
+      left:50%; top:50%;
+      transform:translate(-50%,-50%);
+      font-size:14px;
+    }
+    .packet{
+      position:absolute;
+      top:70px; left:48px;
+      width:94px; height:34px;
+      border-radius:10px;
+      border:1px solid rgba(248,250,249,.44);
+      background:linear-gradient(135deg, rgba(97,18,50,.95), rgba(44,138,115,.88));
+      display:flex; align-items:center; gap:7px;
+      padding:0 10px;
+      box-shadow:0 14px 28px rgba(0,0,0,.4), 0 0 16px rgba(194,162,83,.2);
+      animation: packetFlow var(--cycle) cubic-bezier(.4,0,.2,1) infinite;
+    }
+    .packet i{ font-size:12px; color:#fff; }
+    .packet span{
+      font-size:10px;
+      font-weight:700;
+      letter-spacing:.07em;
+      color:rgba(255,255,255,.9);
+    }
+    .ping{
+      position:absolute;
+      top:18px;
+      width:8px; height:8px;
+      border-radius:50%;
+      background:rgba(248,250,249,.96);
+      animation: pingRise 2.4s ease-out infinite;
+    }
+    .ping::before{
+      content:'';
+      position:absolute; inset:-5px;
+      border-radius:50%;
+      border:1px solid rgba(248,250,249,.58);
+    }
+    .ping-1{ left:70px; animation-delay: .1s; }
+    .ping-2{ left:306px; animation-delay: .8s; }
+    .ping-3{ left:542px; animation-delay: 1.4s; }
+
+    @keyframes drift1 { from { transform: translate(0,0) scale(1); } to { transform: translate(60px,-40px) scale(1.1); } }
+    @keyframes drift2 { from { transform: translate(0,0) scale(1); } to { transform: translate(-40px,60px) scale(1.15); } }
+    @keyframes stagePulse {
+      0%,100% { box-shadow:0 6px 16px rgba(0,0,0,.22); transform:scale(1); }
+      45% { box-shadow:0 0 0 7px rgba(179,142,58,.14), 0 8px 18px rgba(0,0,0,.24); transform:scale(1.04); }
+    }
+    @keyframes packetFlow {
+      0%   { transform:translateX(-20px); opacity:0; }
+      12%  { transform:translateX(10px); opacity:1; }
+      33%  { transform:translateX(230px); }
+      36%  { transform:translateX(236px); }
+      60%  { transform:translateX(466px); }
+      66%  { transform:translateX(472px); }
+      86%  { transform:translateX(560px); opacity:1; }
+      100% { transform:translateX(600px); opacity:0; }
+    }
+    @keyframes pingRise {
+      0% { transform:translateY(12px) scale(.8); opacity:0; }
+      25% { opacity:1; }
+      70% { transform:translateY(-4px) scale(1.1); opacity:.9; }
+      100% { transform:translateY(-12px) scale(1.25); opacity:0; }
+    }
+
+    /* "?"? LAYOUT "?"? */
+    .page {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 480px;
+    }
+
+    /* "?"? LADO IZQUIERDO "?"? */
+    .left-panel {
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: flex-start;
+      padding: 60px 80px;
+      border-right: 1px solid rgba(44,138,115,0.22);
+      position: relative;
+      isolation: isolate;
+      z-index: 2;
+    }
+
+    .left-panel::before{
+      content:'';
+      position:absolute;
+      inset:36px 28px 36px 28px;
+      border-radius:22px;
+      background: linear-gradient(180deg, rgba(7,12,12,0.34) 0%, rgba(7,12,12,0.3) 55%, rgba(7,12,12,0.12) 100%);
+      border:1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.24);
+      z-index:-1;
+    }
+
+    .brand-badge {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(44,138,115,0.24);
+      border: 1px solid rgba(179,142,58,0.48);
+      border-radius: 100px;
+      padding: 6px 18px;
+      font-size: 12px; font-weight: 600;
+      color: var(--oro);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+
+    .brand-badge span { width:7px; height:7px; border-radius:50%; background:var(--oro); animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+    .left-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(52px, 6vw, 88px);
+      line-height: .95;
+      letter-spacing: .02em;
+      margin-bottom: 24px;
+      color: #FFFFFF;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.42);
+    }
+
+    .left-title .accent { color: var(--verde2); }
+    .left-title .guinda { color: var(--guinda2); }
+
+    .left-sub {
+      font-size: 16px; font-weight: 300;
+      color: rgba(248,250,249,0.8);
+      max-width: 420px;
+      line-height: 1.65;
+      margin-bottom: 56px;
+      text-shadow: 0 1px 5px rgba(0,0,0,0.32);
+    }
+
+    .roles-list {
+      display: flex; flex-direction: column; gap: 16px;
+      width: 100%;
+    }
+
+    .role-chip {
+      display: flex; align-items: center; gap: 16px;
+      background: rgba(10,14,16,0.34);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 14px 20px;
+      transition: all .3s ease;
+      backdrop-filter: blur(1px);
+    }
+
+    .role-chip:hover {
+      background: rgba(97,18,50,0.24);
+      border-color: rgba(194,162,83,0.34);
+      transform: translateX(6px);
+    }
+
+    .role-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+
+    .role-icon.supervisor { background: rgba(44,138,115,0.22); color: #ffffff; }
+    .role-icon.notificador { background: rgba(179,142,58,0.22); color: var(--oro); }
+    .role-icon.juridico { background: rgba(111,18,52,0.28); color: var(--guinda2); }
+
+    .role-info { flex: 1; }
+    .role-name { font-size: 13px; font-weight: 700; letter-spacing:.04em; color: #fff; }
+    .role-desc { font-size: 11px; color: rgba(248,250,249,0.8); margin-top: 2px; }
+
+    .role-arrow { color: rgba(248,250,249,0.65); font-size: 12px; }
+
+    /* "?"? LADO DERECHO — FORMULARIO "?"? */
+    .right-panel {
+      display: flex; flex-direction: column;
+      justify-content: center;
+      padding: 60px 48px;
+      background: rgba(8, 10, 12, 0.92);
+      backdrop-filter: blur(3px);
+      border-left: 1px solid rgba(255,255,255,0.08);
+      box-shadow: -24px 0 50px rgba(0,0,0,0.28);
+    }
+
+    .logo-wrap {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .logo-img {
+      height: 52px; width: auto;
+      filter: brightness(1.1);
+    }
+
+    .logo-text { font-size: 11px; font-weight: 600; color: rgba(248,250,249,0.5); letter-spacing:.06em; text-transform: uppercase; line-height: 1.4; }
+
+    .form-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 38px; letter-spacing: .03em;
+      margin-bottom: 8px;
+    }
+
+    .form-subtitle {
+      font-size: 13px; color: rgba(248,250,249,0.45);
+      margin-bottom: 40px;
+    }
+
+    /* "?"? FORM "?"? */
+    .field { margin-bottom: 20px; }
+
+    .field label {
+      display: block;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: .07em; text-transform: uppercase;
+      color: rgba(248,250,249,0.5);
+      margin-bottom: 8px;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap > i {
+      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+      color: rgba(248,250,249,0.4); font-size: 14px;
+      pointer-events: none;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      background: rgba(18, 22, 24, 0.78);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 12px;
+      padding: 14px 44px 14px 44px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px; color: var(--blanco);
+      outline: none;
+      transition: all .25s ease;
+    }
+
+    .input-wrap input::placeholder { color: rgba(248,250,249,0.38); }
+
+    .input-wrap input:focus {
+      background: rgba(24, 28, 30, 0.95);
+      border-color: rgba(255,255,255,0.33);
+      box-shadow: 0 0 0 4px rgba(0,0,0,0.22);
+    }
+
+    .toggle-pass {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: rgba(248,250,249,0.3); background: none; border: none;
+      cursor: pointer; font-size: 14px;
+      transition: color .2s;
+      z-index: 2;
+    }
+    .toggle-pass:hover { color: var(--oro); }
+    .toggle-pass i{
+      position: static !important;
+      transform: none !important;
+      color: inherit;
+      pointer-events: none;
+    }
+
+    /* "?"? BOT"N "?"? */
+    .btn-login {
+      width: 100%; margin-top: 8px;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--guinda) 0%, var(--guinda2) 100%);
+      border: none; border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 700;
+      color: white; cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: all .3s ease;
+      letter-spacing: .03em;
+    }
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(97,18,50,0.45);
+    }
+
+    .btn-login:active { transform: translateY(0); }
+
+    .btn-login .btn-inner {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+
+    .btn-login.loading .btn-inner { opacity: 0; }
+    .btn-loader {
+      position: absolute; inset: 0;
+      display: none; align-items: center; justify-content: center;
+    }
+    .btn-login.loading .btn-loader { display: flex; }
+    .btn-loader-ring {
+      width: 22px; height: 22px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* "?"? ERROR "?"? */
+    .error-box {
+      display: none;
+      background: rgba(181,34,72,0.15);
+      border: 1px solid rgba(181,34,72,0.4);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-top: 16px;
+      font-size: 13px; color: #f87171;
+      align-items: center; gap: 10px;
+    }
+    .error-box.show { display: flex; }
+
+    /* "?"? FOOTER "?"? */
+    .form-footer {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .form-footer a {
+      font-size: 12px; color: rgba(248,250,249,0.35);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .form-footer a:hover { color: var(--oro); }
+
+    .version-tag {
+      font-size: 11px; color: rgba(248,250,249,0.2);
+      font-family: 'Courier New', monospace;
+    }
+
+    /* "?"? RESPONSIVE "?"? */
+    @media (max-width: 900px) {
+      .page { grid-template-columns: 1fr; }
+      .left-panel { display: none; }
+      .right-panel { padding: 40px 28px; }
+      .system-scene { width: 88vw; left: 6vw; opacity: .48; transform: scale(.8); transform-origin: left bottom; }
+      .bg-wrap {
+        background:
+          linear-gradient(rgba(12, 16, 18, 0.66), rgba(12, 16, 18, 0.66)),
+          url('https://i.pinimg.com/originals/92/fd/87/92fd87a9a10071f70eec07620a5e9307.jpg') 42% center / cover no-repeat;
+      }
+      .bg-wrap::before,
+      .bg-wrap::after { content: none; }
+    }
+    @media (max-width: 768px) {
+      .system-scene { display:none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+    .bg-wrap::before, .bg-wrap::after, .system-scene, .packet, .ping {
+      will-change: transform, opacity;
+      transform: translateZ(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-wrap">
+    <div class="grid-lines"></div>
+  </div>
+
+  <div class="page">
+
+    <!-- ... PANEL IZQUIERDO ... -->
+    <div class="left-panel">
+      <h1 class="left-title">
+        SISTEMA<br>
+        DE <span class="accent">REPORTES</span><br>
+        <span class="guinda">CIUDADANOS</span>
+      </h1>
+
+      <p class="left-sub">
+        Plataforma institucional de gestión, seguimiento y resolución de reportes de transporte público del estado de Chiapas.
+      </p>
+
+      <div class="roles-list">
+        <div class="role-chip">
+          <div class="role-icon supervisor"><i class="fas fa-user-shield"></i></div>
+          <div class="role-info">
+            <div class="role-name">Supervisor General</div>
+            <div class="role-desc">Dashboard completo · Estadísticas · Gestión total</div>
+          </div>
+          <i class="fas fa-chevron-right role-arrow"></i>
+        </div>
+        <div class="role-chip">
+          <div class="role-icon notificador"><i class="fas fa-bell"></i></div>
+          <div class="role-info">
+            <div class="role-name">Notificador</div>
+            <div class="role-desc">Seguimiento ciudadano · Checklist · Comunicaciones</div>
+          </div>
+          <i class="fas fa-chevron-right role-arrow"></i>
+        </div>
+        <div class="role-chip">
+          <div class="role-icon juridico"><i class="fas fa-scale-balanced"></i></div>
+          <div class="role-info">
+            <div class="role-name">Jurídico</div>
+            <div class="role-desc">Validación · Sanciones · Resolución de casos</div>
+          </div>
+          <i class="fas fa-chevron-right role-arrow"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- ... PANEL DERECHO — LOGIN ... -->
+    <div class="right-panel">
+
+      <div class="logo-wrap">
+        <img src="../logo-smyt.png" alt="SMT Chiapas" class="logo-img"
+             onerror="this.style.display='none'" />
+        <div class="logo-text">
+          Secretaría de Movilidad<br>y Transporte · Chiapas
+        </div>
+      </div>
+
+      <h2 class="form-title">Acceso Institucional</h2>
+      <p class="form-subtitle">Ingresa tus credenciales para continuar</p>
+
+      <form id="login-form" onsubmit="handleLogin(event)" autocomplete="off">
+
+        <div class="field">
+          <label>Correo institucional</label>
+          <div class="input-wrap">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="email" placeholder="usuario@smt.chiapas.gob.mx"
+                   required autocomplete="username" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Contraseña</label>
+          <div class="input-wrap">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password" placeholder=".............................."
+                   required autocomplete="current-password" />
+            <input type="text" id="password-text" placeholder=".............................."
+                   autocomplete="off" style="display:none" />
+            <button type="button" class="toggle-pass" onclick="togglePassword()">
+              <i class="fas fa-eye" id="eye-icon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login" id="btn-login">
+          <div class="btn-inner">
+            <i class="fas fa-arrow-right-to-bracket"></i>
+            Ingresar al Sistema
+          </div>
+          <div class="btn-loader">
+            <div class="btn-loader-ring"></div>
+          </div>
+        </button>
+
+        <div class="error-box" id="error-box">
+          <i class="fas fa-triangle-exclamation"></i>
+          <span id="error-msg">Credenciales inválidas.</span>
+        </div>
+
+      </form>
+
+      <div class="form-footer">
+        <a href="../index.html">
+          <i class="fas fa-arrow-left" style="margin-right:6px"></i>
+          Volver al portal ciudadano
+        </a>
+        <span class="version-tag">v2.0.0</span>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // "?"? CONFIG "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyt4IJgra_CeRcbv1j6KdIsB1B1ZNWwSfGzMgEpqx8ZiJLf6XuaYK_obAc9y5GZaXTOiw/exec';
+
+    // "?"? REDIRECCI"N POR ROL "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+    const ROLE_REDIRECT = {
+      'ENLACE_GENERAL' : 'Supervisor.html',
+      'NOTIFICADOR'    : 'notificador.html',
+      'JURIDICO'       : 'juridico.html'
+    };
+
+    // "?"? Si ya hay sesión activa, redirigir "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+    window.addEventListener('DOMContentLoaded', () => {
+      const token = sessionStorage.getItem('smt_token');
+      const user  = sessionStorage.getItem('smt_user');
+      if (token && user) {
+        const u = JSON.parse(user);
+        const dest = ROLE_REDIRECT[u.rol];
+        if (dest) { window.location.href = dest; return; }
+      }
+      bindPasswordSync();
+    });
+
+    // "?"? TOGGLE CONTRASE'A "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const textInput = document.getElementById('password-text');
+      const icon  = document.getElementById('eye-icon');
+      const showing = textInput.style.display !== 'none';
+
+      if (!showing) {
+        textInput.value = input.value;
+        input.style.display = 'none';
+        textInput.style.display = 'block';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+        textInput.focus();
+      } else {
+        input.value = textInput.value;
+        textInput.style.display = 'none';
+        input.style.display = 'block';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+        input.focus();
+      }
+    }
+
+    function bindPasswordSync() {
+      const input = document.getElementById('password');
+      const textInput = document.getElementById('password-text');
+      if (!input || !textInput) return;
+
+      input.addEventListener('input', () => { textInput.value = input.value; });
+      input.addEventListener('paste', () => { setTimeout(() => { textInput.value = input.value; }, 0); });
+      textInput.addEventListener('input', () => { input.value = textInput.value; });
+      textInput.addEventListener('paste', () => { setTimeout(() => { input.value = textInput.value; }, 0); });
+    }
+
+    function getPasswordValue() {
+      const input = document.getElementById('password');
+      const textInput = document.getElementById('password-text');
+      if (textInput && textInput.style.display !== 'none') return textInput.value;
+      return input ? input.value : '';
+    }
+
+    // "?"? MOSTRAR ERROR "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+    function showError(msg) {
+      const box = document.getElementById('error-box');
+      document.getElementById('error-msg').textContent = msg;
+      box.classList.add('show');
+      // Shake animation
+      box.style.animation = 'none';
+      box.offsetHeight;
+      box.style.animation = 'shake .4s ease';
+    }
+
+    function hideError() {
+      document.getElementById('error-box').classList.remove('show');
+    }
+
+    // "?"? LOGIN "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+    async function handleLogin(e) {
+      e.preventDefault();
+      hideError();
+
+      const email    = document.getElementById('email').value.trim().toLowerCase();
+      const password = getPasswordValue();
+      const btn      = document.getElementById('btn-login');
+
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'adminLogin', email, password })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          // Guardar sesión
+          sessionStorage.setItem('smt_token', data.token);
+          sessionStorage.setItem('smt_user',  JSON.stringify(data.user));
+
+          const dest = ROLE_REDIRECT[data.user.rol];
+          if (!dest) {
+            showError('Rol no reconocido: ' + data.user.rol);
+            return;
+          }
+
+          // Animación de éxito antes de redirigir
+          btn.style.background = 'linear-gradient(135deg, #6F1234, #C2A253)';
+          btn.querySelector('.btn-inner').innerHTML =
+            '<i class="fas fa-check"></i> Acceso concedido';
+          btn.classList.remove('loading');
+
+          setTimeout(() => { window.location.href = dest; }, 800);
+
+        } else {
+          showError(data.message || 'Credenciales inválidas. Intenta de nuevo.');
+          btn.classList.remove('loading');
+          btn.disabled = false;
+        }
+
+      } catch (err) {
+        showError('Error de conexión. Verifica tu internet.');
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+  </script>
+
+  <style>
+    @keyframes shake {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-8px)}
+      40%{transform:translateX(8px)}
+      60%{transform:translateX(-5px)}
+      80%{transform:translateX(5px)}
+    }
+  </style>
+</body>
+</html>
+
