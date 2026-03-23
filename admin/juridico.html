@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Jurídico — SMT Chiapas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    :root{--g2:#1F4E79;--g3:#2D6FA3;--g4:#4A86B8;--bg:#F5F8FC;--bg2:#FFFFFF;--card:#FFFFFF;--card2:#F7FBFF;--txt:#1F2937;--txt2:#4B5563;--txt3:#6B7280;--border:rgba(31,78,121,0.18);}
+    html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);}
+    .shell{display:grid;grid-template-columns:280px 1fr;height:100vh;overflow:hidden;}
+    /* SIDEBAR */
+    .sidebar{background:linear-gradient(180deg,#1F4E79 0%, #2D6FA3 100%);border-right:1px solid rgba(255,255,255,0.18);display:flex;flex-direction:column;z-index:200;transition:transform .3s;}
+    .s-head{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;gap:12px;color:#fff;}
+    .s-av{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.34);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;flex-shrink:0;}
+    .s-name{font-size:13px;font-weight:700;} .s-role{font-size:11px;color:rgba(255,255,255,0.88);font-weight:600;}
+    .s-nav{flex:1;padding:14px 12px;overflow-y:auto;}
+    .ng-t{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,0.72);padding:8px 8px 4px;}
+    .ni{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;color:rgba(255,255,255,0.78);transition:all .2s;border:none;background:transparent;width:100%;text-align:left;margin-bottom:2px;}
+    .ni:hover{background:rgba(255,255,255,0.16);color:#fff;} .ni.active{background:rgba(255,255,255,0.2);color:#fff;font-weight:600;}
+    .ni-ic{width:32px;height:32px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;}
+    .ni.active .ni-ic{background:rgba(255,255,255,0.26);color:#fff;} .ni:not(.active) .ni-ic{background:rgba(255,255,255,0.12);}
+    .nb{margin-left:auto;min-width:20px;height:20px;border-radius:100px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;}
+    .nb.red{background:rgba(31,78,121,0.35);color:var(--g4);} .nb.green{background:rgba(16,185,129,0.2);color:#34d399;} .nb.gray{background:rgba(107,114,128,0.2);color:#9ca3af;}
+    .s-foot{padding:14px;border-top:1px solid rgba(255,255,255,0.2);}
+    .btn-out{display:flex;align-items:center;gap:8px;width:100%;padding:10px 12px;border-radius:10px;border:none;background:transparent;color:rgba(255,255,255,0.8);cursor:pointer;font-size:13px;transition:all .2s;}
+    .btn-out:hover{background:rgba(255,255,255,0.16);color:#fff;}
+    /* TOPBAR */
+    .main{display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{height:58px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0;gap:12px;position:relative;z-index:1200;overflow:visible;}
+    .topbar-l{display:flex;align-items:center;gap:10px;} .topbar-r{display:flex;align-items:center;gap:8px;}
+    .hamburger{display:none;width:36px;height:36px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--txt2);cursor:pointer;font-size:14px;align-items:center;justify-content:center;}
+    .pg-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;}
+    .icon-btn{width:36px;height:36px;border-radius:9px;border:1px solid var(--border);background:var(--bg);color:var(--txt2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;}
+    .icon-btn:hover{background:rgba(31,78,121,0.12);color:var(--g3);}
+    .bell-wrap{position:relative;z-index:5100;isolation:isolate;}
+    .bell-dot{position:absolute;top:4px;right:4px;width:10px;height:10px;background:#ef4444;border-radius:50%;border:2px solid var(--bg2);display:none;}
+    .bell-dot.show{display:block;animation:pd 1.5s infinite;} @keyframes pd{0%,100%{transform:scale(1);}50%{transform:scale(1.3);}}
+    .notif-panel{position:absolute;top:46px;right:0;width:340px;background:var(--card2);border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 40px rgba(0,0,0,0.5);z-index:5200;display:none;}
+    .notif-panel.open{display:block;animation:fu .2s ease;} @keyframes fu{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+    .np-head{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+    .np-title{font-size:13px;font-weight:700;} .np-clear{font-size:11px;color:var(--g4);cursor:pointer;background:none;border:none;}
+    .np-list{max-height:300px;overflow-y:auto;}
+    .np-item{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:background .2s;}
+    .np-item:hover{background:rgba(31,78,121,0.08);} .np-item.unread{background:rgba(31,78,121,0.05);}
+    .np-row{display:flex;gap:10px;align-items:flex-start;}
+    .np-ico{width:32px;height:32px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;background:rgba(0,0,0,0.2);}
+    .np-msg{font-size:12px;line-height:1.45;flex:1;} .np-time{font-size:10px;color:var(--txt3);margin-top:2px;}
+    .np-dot{width:7px;height:7px;border-radius:50%;background:var(--g4);flex-shrink:0;margin-top:4px;}
+    /* SEARCH */
+    .search-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+    .sw{position:relative;flex:1;}
+    .sw i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt3);font-size:13px;pointer-events:none;}
+    .si{width:100%;background:#FFFFFF;border:1px solid var(--border);border-radius:10px;padding:9px 14px 9px 36px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt);outline:none;transition:all .2s;}
+    .si:focus{border-color:var(--g3);background:rgba(31,78,121,0.06);}
+    /* CONTENT */
+    .content{flex:1;overflow-y:auto;padding:20px;}
+    .content::-webkit-scrollbar{width:5px;} .content::-webkit-scrollbar-thumb{background:rgba(31,78,121,0.3);border-radius:3px;}
+    .section{display:none;} .section.active{display:block;}
+    /* STATS */
+    .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
+    .sm{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px;display:flex;align-items:center;gap:10px;transition:all .25s;}
+    .sm:hover{transform:translateY(-2px);border-color:var(--g2);}
+    .sm-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+    .sm-num{font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1;} .sm-lbl{font-size:11px;color:var(--txt2);}
+    /* CARDS */
+    .rep-list{display:flex;flex-direction:column;gap:10px;}
+    .rep-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all .25s;}
+    .rep-card:hover{border-color:rgba(31,78,121,0.4);box-shadow:0 6px 20px rgba(31,78,121,0.16);}
+    .rc-head{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+    .rc-folio{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.04em;color:var(--g4);}
+    .rc-meta{font-size:12px;color:var(--txt2);margin-top:2px;}
+    .rc-body{display:none;padding:0 18px 18px;border-top:1px solid rgba(255,255,255,0.05);}
+    .rc-body.open{display:block;}
+    /* BADGES */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700;}
+    .badge.nuevo{background:rgba(96,165,250,0.15);color:#60a5fa;} .badge.revision{background:rgba(251,191,36,0.15);color:#fbbf24;} .badge.sancion{background:rgba(167,139,250,0.15);color:#a78bfa;} .badge.cerrado{background:rgba(107,114,128,0.15);color:#9ca3af;} .badge.rechazado{background:rgba(248,113,113,0.15);color:#f87171;} .badge.externo{background:rgba(245,158,11,0.15);color:#fbbf24;} .badge.interno{background:rgba(0,169,143,0.15);color:#00A98F;}
+    /* TIEMPO */
+    .tbadge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;}
+    .tbadge.ok{background:rgba(16,185,129,0.12);color:#34d399;} .tbadge.warn{background:rgba(251,191,36,0.15);color:#fbbf24;} .tbadge.danger{background:rgba(239,68,68,0.15);color:#f87171;animation:pal 2s infinite;} @keyframes pal{0%,100%{opacity:1;}50%{opacity:.5;}}
+    /* INFO GRID */
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+    .ifield{background:rgba(0,0,0,0.2);border-radius:8px;padding:10px 12px;}
+    .if-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);margin-bottom:3px;}
+    .if-val{font-size:13px;font-weight:500;}
+    /* TIMELINE */
+    .tl-item{display:flex;gap:10px;margin-bottom:10px;}
+    .tl-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+    .tl-dot{width:10px;height:10px;border-radius:50%;border:2px solid;flex-shrink:0;margin-top:3px;}
+    .tl-line{width:2px;flex:1;background:rgba(255,255,255,0.07);margin:4px 0;min-height:20px;}
+    .tl-dot.nuevo{background:#60a5fa;border-color:#60a5fa;} .tl-dot.revision{background:#fbbf24;border-color:#fbbf24;} .tl-dot.sancion{background:#a78bfa;border-color:#a78bfa;} .tl-dot.cerrado{background:#34d399;border-color:#34d399;} .tl-dot.rechazado{background:#f87171;border-color:#f87171;} .tl-dot.default{background:var(--txt3);border-color:var(--txt3);}
+    .tl-estado{font-size:12px;font-weight:700;} .tl-quien{font-size:11px;color:var(--txt2);} .tl-fecha{font-size:10px;color:var(--txt3);} .tl-comm{font-size:11px;color:var(--txt2);font-style:italic;margin-top:2px;}
+    /* ACTION PANELS */
+    .ap{background:rgba(0,0,0,0.25);border-radius:12px;padding:14px;margin-top:12px;border:1px solid var(--border);}
+    .ap-t{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+    .jur-ta{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt);outline:none;transition:border-color .2s;resize:vertical;}
+    .jur-ta:focus{border-color:var(--g3);}
+    .fl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);margin-bottom:6px;display:block;}
+    /* BOTONES ACCI"N */
+    .btn-v{padding:10px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,#059669,#10b981);color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:7px;}
+    .btn-v:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(16,185,129,0.35);}
+    .btn-x{padding:10px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:7px;}
+    .btn-x:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(239,68,68,0.35);}
+    .btn-ext{padding:10px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:7px;}
+    .btn-ext:hover{transform:translateY(-1px);}
+    .btn-int{padding:10px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,#00A98F,#00c6a8);color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:7px;}
+    .btn-int:hover{transform:translateY(-1px);}
+    .btn-sanc{padding:10px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--g2),var(--g4));color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:7px;}
+    .btn-sanc:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(181,34,72,0.35);}
+    .btn-g{padding:9px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--txt2);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+    .btn-g:hover{background:rgba(255,255,255,0.06);}
+    .btn-send{padding:9px 16px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--g2),var(--g4));color:#fff;font-size:13px;cursor:pointer;}
+    /* UPLOAD */
+    .uz{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .25s;}
+    .uz:hover,.uz.over{border-color:var(--g3);background:rgba(31,78,121,0.06);}
+    .uz input{display:none;} .uz i{font-size:26px;color:var(--txt3);margin-bottom:8px;display:block;}
+    .uz p{font-size:13px;color:var(--txt2);} .uz small{font-size:11px;color:var(--txt3);}
+    .fp{background:rgba(0,0,0,0.2);border-radius:9px;padding:10px 12px;margin-top:8px;display:flex;align-items:center;gap:10px;font-size:13px;}
+    /* COMENTARIOS */
+    .comm-box{background:rgba(0,0,0,0.2);border-radius:9px;padding:10px 12px;margin-bottom:6px;}
+    .comm-auth{font-size:12px;font-weight:700;color:var(--g4);} .comm-body{font-size:12px;color:var(--txt2);margin-top:3px;line-height:1.5;} .comm-time{font-size:10px;color:var(--txt3);margin-top:2px;}
+    .comm-row{display:flex;gap:8px;margin-top:8px;}
+    .comm-inp{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:9px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt);outline:none;transition:border-color .2s;}
+    .comm-inp:focus{border-color:var(--g3);}
+    .empty{text-align:center;padding:36px;color:var(--txt3);}
+    .empty i{font-size:34px;margin-bottom:10px;display:block;}
+    /* INACTIVIDAD */
+    .inact-ov{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;display:none;align-items:center;justify-content:center;}
+    .inact-ov.show{display:flex;}
+    .inact-box{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:340px;width:90%;text-align:center;}
+    .inact-n{font-family:'Bebas Neue',sans-serif;font-size:52px;color:#f87171;line-height:1;}
+    /* TOAST */
+    #toast-wrap{position:fixed;bottom:20px;right:20px;z-index:400;display:flex;flex-direction:column;gap:8px;}
+    .t-item{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px 15px;font-size:13px;min-width:220px;animation:sl .3s ease;}
+    @keyframes sl{from{transform:translateX(110%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+    /* RESPONSIVE */
+    @media(max-width:860px){
+      .shell{grid-template-columns:1fr;}
+      .sidebar{position:fixed;top:0;left:0;height:100%;transform:translateX(-100%);}
+      .sidebar.open{transform:translateX(0);}
+      .hamburger{display:flex!important;}
+      .stats-row{grid-template-columns:1fr 1fr 1fr;}
+      .info-grid{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+<div class="inact-ov" id="inact-ov">
+  <div class="inact-box">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fbbf24;margin-bottom:6px">s️ Sesión por expirar</div>
+    <div class="inact-n" id="inact-n">60</div>
+    <p style="font-size:13px;color:var(--txt2);margin:10px 0 18px">30 minutos sin actividad. La sesión se cerrará.</p>
+    <button class="btn-sanc" onclick="resetInact()" style="width:100%"><i class="fas fa-hand"></i>Seguir en sesión</button>
+  </div>
+</div>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="s-head">
+      <div class="s-av" id="s-av">JR</div>
+      <div><div class="s-name" id="s-name">Jurídico</div><div class="s-role">s-️ Área Jurídica SMT</div></div>
+    </div>
+    <nav class="s-nav">
+      <div class="ng-t">Bandeja</div>
+      <button class="ni active" onclick="switchSec('pendientes',this)"><div class="ni-ic"><i class="fas fa-inbox"></i></div>Pendientes<span class="nb red" id="nb-pend">0</span></button>
+      <button class="ni" onclick="switchSec('sancionados',this)"><div class="ni-ic"><i class="fas fa-gavel"></i></div>Sancionados<span class="nb red" id="nb-sanc">0</span></button>
+      <button class="ni" onclick="switchSec('resueltos',this)"><div class="ni-ic"><i class="fas fa-circle-check"></i></div>Resueltos<span class="nb green" id="nb-res">0</span></button>
+      <button class="ni" onclick="switchSec('rechazados',this)"><div class="ni-ic"><i class="fas fa-ban"></i></div>No Válidos<span class="nb gray" id="nb-rech">0</span></button>
+      <div class="ng-t" style="margin-top:10px">Clasificación</div>
+      <button class="ni" onclick="switchSec('externos',this)"><div class="ni-ic"><i class="fas fa-arrow-up-right-from-square"></i></div>Externos<span class="nb red" id="nb-ext">0</span></button>
+    </nav>
+    <div class="s-foot"><button class="btn-out" onclick="logout()"><i class="fas fa-arrow-right-from-bracket"></i>Cerrar Sesión</button></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-l">
+        <button class="hamburger" onclick="toggleSB()"><i class="fas fa-bars"></i></button>
+        <span class="pg-title" id="pg-t">PENDIENTES DE REVISI"N</span>
+      </div>
+      <div class="topbar-r">
+        <div class="bell-wrap">
+          <button class="icon-btn" onclick="toggleNP()"><i class="fas fa-bell"></i></button>
+          <div class="bell-dot" id="bell-dot"></div>
+          <div class="notif-panel" id="notif-panel">
+            <div class="np-head"><span class="np-title">Notificaciones</span><button class="np-clear" onclick="marcarTodo()">Todas leídas</button></div>
+            <div class="np-list" id="np-list"><div class="empty" style="padding:18px"><p>Cargando...</p></div></div>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="cargarTodo()"><i class="fas fa-rotate-right"></i></button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="stats-row">
+        <div class="sm"><div class="sm-ic" style="background:rgba(251,191,36,0.15);color:#fbbf24"><i class="fas fa-inbox"></i></div><div><div class="sm-num" id="st-p" style="color:#fbbf24">0</div><div class="sm-lbl">Pendientes</div></div></div>
+        <div class="sm"><div class="sm-ic" style="background:rgba(16,185,129,0.15);color:#34d399"><i class="fas fa-check"></i></div><div><div class="sm-num" id="st-v" style="color:#34d399">0</div><div class="sm-lbl">Validados</div></div></div>
+        <div class="sm"><div class="sm-ic" style="background:rgba(167,139,250,0.15);color:#a78bfa"><i class="fas fa-gavel"></i></div><div><div class="sm-num" id="st-s" style="color:#a78bfa">0</div><div class="sm-lbl">Sancionados</div></div></div>
+        <div class="sm"><div class="sm-ic" style="background:rgba(248,113,113,0.15);color:#f87171"><i class="fas fa-ban"></i></div><div><div class="sm-num" id="st-r" style="color:#f87171">0</div><div class="sm-lbl">No Válidos</div></div></div>
+        <div class="sm"><div class="sm-ic" style="background:rgba(245,158,11,0.15);color:#fbbf24"><i class="fas fa-arrow-up-right-from-square"></i></div><div><div class="sm-num" id="st-e" style="color:#fbbf24">0</div><div class="sm-lbl">Externos</div></div></div>
+      </div>
+
+      <div class="section active" id="sec-pendientes">
+        <div class="search-bar"><div class="sw"><i class="fas fa-search"></i><input type="search" class="si" id="q-pendientes" placeholder="Folio, categoría, infracción..." oninput="filtrar('pendientes')"/></div></div>
+        <div class="rep-list" id="lst-pendientes"></div>
+      </div>
+      <div class="section" id="sec-sancionados">
+        <div class="search-bar"><div class="sw"><i class="fas fa-search"></i><input type="search" class="si" id="q-sancionados" placeholder="Buscar..." oninput="filtrar('sancionados')"/></div></div>
+        <div class="rep-list" id="lst-sancionados"></div>
+      </div>
+      <div class="section" id="sec-resueltos">
+        <div class="search-bar"><div class="sw"><i class="fas fa-search"></i><input type="search" class="si" id="q-resueltos" placeholder="Buscar..." oninput="filtrar('resueltos')"/></div></div>
+        <div class="rep-list" id="lst-resueltos"></div>
+      </div>
+      <div class="section" id="sec-rechazados">
+        <div class="search-bar"><div class="sw"><i class="fas fa-search"></i><input type="search" class="si" id="q-rechazados" placeholder="Buscar..." oninput="filtrar('rechazados')"/></div></div>
+        <div class="rep-list" id="lst-rechazados"></div>
+      </div>
+      <div class="section" id="sec-externos">
+        <div class="rep-list" id="lst-externos"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast-wrap"></div>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbyt4IJgra_CeRcbv1j6KdIsB1B1ZNWwSfGzMgEpqx8ZiJLf6XuaYK_obAc9y5GZaXTOiw/exec';
+let TOKEN='',USER=null,REPS=[],RS={};
+let inactT=null,cntT=null,inactS=60;
+const INACT=30*60*1000;
+const GC={LEVE:'#34d399',MODERADA:'#fbbf24',GRAVE:'#f97316',MUY_GRAVE:'#f87171'};
+const CAT={CONDUCTOR:'Conductor',UNIDAD:'Unidad',SERVICIO:'Servicio',DOCUMENTACION:'Documentación',RUTA:'Ruta',OTRO:'Otro'};
+const EC={NUEVO:'nuevo',EN_REVISION_1:'revision',SANCION_ASIGNADA:'sancion',CERRADO:'cerrado',RECHAZADO:'rechazado'};
+const EL={NUEVO:'Nuevo',EN_REVISION_1:'En Revisión',VALIDO:'Validado',SANCION_ASIGNADA:'Sancionado',CERRADO:'Cerrado',RECHAZADO:'No Válido'};
+const TLC={NUEVO:'nuevo',EN_REVISION_1:'revision',VALIDO:'revision',SANCION_ASIGNADA:'sancion',CERRADO:'cerrado',RECHAZADO:'rechazado'};
+const NC={NUEVO_REPORTE:'#fbbf24',VALIDADO:'#34d399',RECHAZADO:'#f87171',SANCION:'#a78bfa',COMENTARIO:'#60a5fa',EXTERNO:'#fbbf24',INTERNO:'#00A98F',CERRADO:'#9ca3af'};
+const NI_I={NUEVO_REPORTE:'fa-inbox',VALIDADO:'fa-check-circle',RECHAZADO:'fa-times-circle',SANCION:'fa-gavel',COMENTARIO:'fa-comment',EXTERNO:'fa-arrow-up-right-from-square',INTERNO:'fa-building',CERRADO:'fa-archive'};
+let notifCache=[];
+const notifPendingRead = new Set();
+
+(function(){
+  TOKEN=sessionStorage.getItem('smt_token');
+  const u=sessionStorage.getItem('smt_user');
+  if(!TOKEN||!u){location.href='login.html';return;}
+  USER=JSON.parse(u);
+  if(USER.rol!=='JURIDICO'){location.href='login.html';return;}
+  document.getElementById('s-av').textContent=USER.nombre_completo.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('s-name').textContent=USER.nombre_completo;
+  const rs=sessionStorage.getItem('repState');if(rs)RS=JSON.parse(rs);
+  initInact();
+})();
+
+window.addEventListener('DOMContentLoaded',()=>{cargarTodo();cargarNotifs();setInterval(cargarNotifs,60000);});
+
+async function req(body){const r=await fetch(API,{method:'POST',body:JSON.stringify({...body,token:TOKEN})});return r.json();}
+
+async function cargarTodo(){
+  try{
+    const r=await req({action:'getAdminReports'});
+    if(!r.success){if(r.message?.includes('expirada'))logout();return;}
+    REPS=r.data;stats();renderAll();
+  }catch(e){toast('Error de conexión','error');}
+}
+
+async function cargarNotifs(){
+  try{
+    const r=await req({action:'getNotificaciones'});
+    if(!r.success) return;
+    notifCache=(Array.isArray(r.data)?r.data:[]).map(n=>({
+      ...n,
+      leida:notifPendingRead.has(n.id)?'TRUE':n.leida
+    }));
+    notifCache.sort((a,b)=>{
+      const ua=a.leida==='FALSE'?0:1, ub=b.leida==='FALSE'?0:1;
+      if(ua!==ub) return ua-ub;
+      return new Date(b.fecha)-new Date(a.fecha);
+    });
+    renderNotifs();
+  }catch(e){}
+}
+
+function dias(f){const d=(Date.now()-new Date(f).getTime())/(864e5);return isNaN(d)?0:d;}
+function tbadge(r){const d=dias(r.fecha_creacion);if(d>7)return`<span class="tbadge danger"><i class="fas fa-fire"></i>${Math.floor(d)}d</span>`;if(d>3)return`<span class="tbadge warn"><i class="fas fa-clock"></i>${Math.floor(d)}d</span>`;return`<span class="tbadge ok">${Math.floor(d)}d</span>`;}
+
+function stats(){
+  const pend=REPS.filter(r=>r.estado_actual==='EN_REVISION_1').length;
+  const val=REPS.filter(r=>['VALIDO','SANCION_ASIGNADA'].includes(r.estado_actual)).length;
+  const sanc=REPS.filter(r=>r.estado_actual==='SANCION_ASIGNADA').length;
+  const rech=REPS.filter(r=>r.estado_actual==='RECHAZADO').length;
+  const ext=REPS.filter(r=>RS[r.id]?.tipo==='externo').length;
+  document.getElementById('st-p').textContent=pend; document.getElementById('nb-pend').textContent=pend;
+  document.getElementById('st-v').textContent=val;
+  document.getElementById('st-s').textContent=sanc; document.getElementById('nb-sanc').textContent=sanc;
+  document.getElementById('st-r').textContent=rech; document.getElementById('nb-rech').textContent=rech;
+  document.getElementById('st-e').textContent=ext; document.getElementById('nb-ext').textContent=ext;
+  document.getElementById('nb-res').textContent=REPS.filter(r=>r.estado_actual==='CERRADO').length;
+}
+
+function renderAll(){
+  renderL('pendientes',REPS.filter(r=>r.estado_actual==='EN_REVISION_1'));
+  renderL('sancionados',REPS.filter(r=>r.estado_actual==='SANCION_ASIGNADA'));
+  renderL('resueltos',REPS.filter(r=>r.estado_actual==='CERRADO'));
+  renderL('rechazados',REPS.filter(r=>r.estado_actual==='RECHAZADO'));
+  renderL('externos',REPS.filter(r=>RS[r.id]?.tipo==='externo'));
+}
+
+function filtrar(sec){
+  const q=(document.getElementById('q-'+sec)?.value||'').toLowerCase();
+  const map={pendientes:r=>r.estado_actual==='EN_REVISION_1',sancionados:r=>r.estado_actual==='SANCION_ASIGNADA',resueltos:r=>r.estado_actual==='CERRADO',rechazados:r=>r.estado_actual==='RECHAZADO'};
+  let l=(REPS.filter(map[sec]||((r)=>true)));
+  if(q)l=l.filter(r=>(r.folio+r.categoria+r.tipo_infraccion).toLowerCase().includes(q));
+  renderL(sec,l);
+}
+
+function renderL(sec,lista){
+  const el=document.getElementById('lst-'+sec);if(!el)return;
+  if(!lista.length){el.innerHTML='<div class="empty"><i class="fas fa-inbox"></i><p>Sin reportes aquí</p></div>';return;}
+  el.innerHTML=lista.map(r=>cardHTML(r)).join('');
+}
+
+function cardHTML(r){
+  const rs=RS[r.id]||{};const enRev=r.estado_actual==='EN_REVISION_1';
+  return `<div class="rep-card" id="card-${r.id}">
+    <div class="rc-head" onclick="toggleCard('${r.id}')">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="rc-folio">${r.folio}</span>
+          <span class="badge ${EC[r.estado_actual]||'nuevo'}">${EL[r.estado_actual]||r.estado_actual}</span>
+          ${rs.tipo?`<span class="badge ${rs.tipo==='externo'?'externo':'interno'}">${rs.tipo==='externo'?'Externo':'Interno'}</span>`:''}
+          ${tbadge(r)}
+        </div>
+        <div class="rc-meta">${CAT[r.categoria]||r.categoria} · ${r.tipo_infraccion} · <span style="color:${GC[r.gravedad]||'#fff'}">${r.gravedad||'—'}</span> · ${fmt(r.fecha_creacion)}</div>
+      </div>
+      <i class="fas fa-chevron-down" id="chev-${r.id}" style="color:var(--txt3);font-size:13px;transition:transform .2s;flex-shrink:0"></i>
+    </div>
+    <div class="rc-body" id="body-${r.id}">
+      <div class="info-grid">
+        ${iF('Categoría',CAT[r.categoria]||r.categoria)} ${iF('Gravedad',`<span style="color:${GC[r.gravedad]}">${r.gravedad}</span>`)}
+        ${iF('Fecha Incidente',fmt(r.fecha_incidente))} ${iF('Reportante',r.usuario_nombre||'Anónimo')}
+        ${r.numero_ruta?iF('Ruta',r.numero_ruta):''}
+      </div>
+      ${r.descripcion?`<div style="background:rgba(0,0,0,0.2);border-radius:9px;padding:12px;margin-top:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--txt3);margin-bottom:5px">Descripción</div><p style="font-size:13px;color:var(--txt2);line-height:1.6">${r.descripcion}</p></div>`:''}
+
+      ${enRev&&rs.validado===undefined?panelValidar(r):''}
+      ${enRev&&rs.validado===true&&rs.tipo===undefined?panelClasificar(r):''}
+      ${enRev&&rs.tipo?panelTipo(r):''}
+      ${rs.mostrarSancion||r.estado_actual==='SANCION_ASIGNADA'?panelSancion(r):''}
+
+      <!-- TIMELINE -->
+      <div class="ap">
+        <div class="ap-t"><i class="fas fa-timeline"></i>Historial del Caso</div>
+        <div id="tl-${r.id}" style="font-size:12px;color:var(--txt3)">Cargando...</div>
+      </div>
+      <!-- COMENTARIOS -->
+      <div class="ap" style="margin-top:10px">
+        <div class="ap-t"><i class="fas fa-comments"></i>Comentarios Internos</div>
+        <div id="comms-${r.id}" style="font-size:12px;color:var(--txt3)">Cargando...</div>
+        <div class="comm-row" style="margin-top:8px">
+          <input type="text" class="comm-inp" id="ci-${r.id}" placeholder="Comentario interno (solo admins)..."/>
+          <button class="btn-send" onclick="envComm('${r.id}',true)"><i class="fas fa-paper-plane"></i></button>
+        </div>
+        <button class="btn-g" style="width:100%;margin-top:6px;font-size:11px" onclick="envComm('${r.id}',false)"><i class="fas fa-user" style="margin-right:4px"></i>Mensaje al ciudadano</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function panelValidar(r){
+  return `<div class="ap" style="border-color:rgba(251,191,36,0.3)">
+    <div class="ap-t"><i class="fas fa-scale-balanced"></i>Paso 1 — Validar el Reporte</div>
+    <label class="fl">Motivo de tu decisión (obligatorio)</label>
+    <textarea class="jur-ta" id="vc-${r.id}" rows="3" placeholder="Explica detalladamente por qué es válido o no..."></textarea>
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn-v" onclick="decidir('${r.id}',true)"><i class="fas fa-check-circle"></i>Sí es Válido</button>
+      <button class="btn-x" onclick="decidir('${r.id}',false)"><i class="fas fa-times-circle"></i>No es Válido</button>
+    </div>
+  </div>`;
+}
+
+function panelClasificar(r){
+  return `<div class="ap" style="border-color:rgba(99,102,241,0.3)">
+    <div class="ap-t"><i class="fas fa-code-branch"></i>Paso 2 — Clasificar el Caso</div>
+    <p style="font-size:13px;color:var(--txt2);margin-bottom:14px">¿Es competencia interna (SMT) o externa (Fiscalía / otra dependencia)?</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn-ext" onclick="clasificar('${r.id}','externo')"><i class="fas fa-arrow-up-right-from-square"></i>Externo — Fiscalía</button>
+      <button class="btn-int" onclick="clasificar('${r.id}','interno')"><i class="fas fa-building"></i>Interno — SMT</button>
+    </div>
+  </div>`;
+}
+
+function panelTipo(r){
+  const rs=RS[r.id]||{};const esExt=rs.tipo==='externo';
+  return `<div class="ap" style="border-color:${esExt?'rgba(245,158,11,0.3)':'rgba(0,169,143,0.3)'}">
+    <div class="ap-t"><i class="fas ${esExt?'fa-arrow-up-right-from-square':'fa-building'}"></i>Caso ${esExt?'Externo — Fiscalía':'Interno — SMT'}</div>
+    <label class="fl">Explicación para el Notificador</label>
+    <textarea class="jur-ta" id="tc-${r.id}" rows="3" placeholder="Explica el motivo de la clasificación...">${rs.tipoComm||''}</textarea>
+    <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn-sanc" onclick="envTipo('${r.id}')"><i class="fas fa-paper-plane"></i>Enviar al Notificador</button>
+      ${!esExt?`<button class="btn-v" onclick="showSancion('${r.id}')"><i class="fas fa-gavel"></i>Asignar Sanción</button>`:''}
+    </div>
+  </div>`;
+}
+
+function panelSancion(r){
+  if(r.estado_actual==='SANCION_ASIGNADA'){
+    return `<div class="ap" style="border-color:rgba(167,139,250,0.3)">
+      <div class="ap-t"><i class="fas fa-gavel"></i>Sanción Asignada</div>
+      <div style="background:rgba(0,0,0,0.2);border-radius:9px;padding:12px"><p style="font-size:13px;color:#a78bfa">${r.sancion||'—'}</p></div>
+      ${uploadZone(r)}
+    </div>`;
+  }
+  const rs=RS[r.id]||{};
+  return `<div class="ap" style="border-color:rgba(167,139,250,0.3)" id="sp-${r.id}">
+    <div class="ap-t"><i class="fas fa-gavel"></i>Paso 3 — Asignar Sanción</div>
+    <label class="fl">Descripción de la Sanción</label>
+    <textarea class="jur-ta" id="sa-${r.id}" rows="3" placeholder="Ej: Multa $2,500. Suspensión 15 días. Art. 78 Reglamento...">${rs.sancionTexto||''}</textarea>
+    ${uploadZone(r)}
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn-sanc" onclick="aplicarSancion('${r.id}')"><i class="fas fa-gavel"></i>Aplicar y Notificar</button>
+      <button class="btn-g" onclick="saveDraft('${r.id}')"><i class="fas fa-floppy-disk"></i>Guardar Borrador</button>
+    </div>
+  </div>`;
+}
+
+function uploadZone(r){
+  const rs=RS[r.id]||{};
+  return `<div style="margin-top:12px">
+    <label class="fl"><i class="fas fa-paperclip" style="margin-right:4px"></i>Documento del Expediente</label>
+    <div class="uz" onclick="document.getElementById('uf-${r.id}').click()" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropFile(event,'${r.id}')">
+      <input type="file" id="uf-${r.id}" accept=".pdf,.doc,.docx,.jpg,.png" onchange="pickFile(this,'${r.id}')"/>
+      <i class="fas fa-file-arrow-up"></i><p>Arrastra o toca para subir</p><small>PDF, Word, imagen — máx. 10MB</small>
+    </div>
+    ${rs.archivo?`<div class="fp"><i class="fas fa-file-pdf" style="color:#f87171;font-size:18px"></i><span>${rs.archivo}</span><button class="btn-g" style="margin-left:auto;padding:4px 8px;font-size:11px" onclick="quitarFile('${r.id}')">Quitar</button></div>`:''}
+  </div>`;
+}
+
+// ACCIONES
+async function decidir(rId,esValido){
+  const comm=document.getElementById('vc-'+rId)?.value.trim();
+  if(!comm){toast('Debes explicar la razón de tu decisión','error');return;}
+  if(!confirm(esValido?'¿Confirmas que el reporte ES VÁLIDO?':'¿Confirmas que NO es válido?'))return;
+  RS[rId]=RS[rId]||{};RS[rId].validado=esValido;RS[rId].valComm=comm;saveRS();
+  if(esValido){
+    await req({action:'addComentario',reporteId:rId,comentario:'o. VALIDADO: '+comm,es_interno:false});
+    toast('Reporte validado — ahora clasifica el caso','success');
+  } else {
+    const r=await req({action:'validarReporte',reporteId:rId,esValido:false,motivo_rechazo:comm});
+    if(r.success){toast('Reporte marcado como NO válido','success');cargarTodo();return;}
+    else{toast(r.message,'error');return;}
+  }
+  rerender(rId);
+}
+
+function clasificar(rId,tipo){
+  if(!confirm(`¿Confirmas clasificar como ${tipo==='externo'?'EXTERNO (Fiscalía)':'INTERNO (SMT)'}?`))return;
+  RS[rId]=RS[rId]||{};RS[rId].tipo=tipo;saveRS();
+  toast(`Caso clasificado como ${tipo}`,'success');rerender(rId);stats();
+}
+
+async function envTipo(rId){
+  const val=document.getElementById('tc-'+rId)?.value.trim();
+  if(!val){toast('Escribe la explicación para el Notificador','error');return;}
+  RS[rId].tipoComm=val;saveRS();
+  await req({action:'addComentario',reporteId:rId,comentario:'Y"< Clasificación — '+val,es_interno:false});
+  toast('Notificador informado','success');
+}
+
+function showSancion(rId){RS[rId]=RS[rId]||{};RS[rId].mostrarSancion=true;saveRS();rerender(rId);}
+
+async function aplicarSancion(rId){
+  const txt=document.getElementById('sa-'+rId)?.value.trim();
+  if(!txt){toast('Describe la sanción','error');return;}
+  if(!confirm('¿Confirmas aplicar esta sanción?'))return;
+  RS[rId].sancionTexto=txt;saveRS();
+  const r=await req({action:'validarReporte',reporteId:rId,esValido:true,sancion:txt});
+  if(r.success){toast('o" Sanción asignada y notificada','success');cargarTodo();}
+  else toast(r.message,'error');
+}
+
+function saveDraft(rId){
+  RS[rId].sancionTexto=document.getElementById('sa-'+rId)?.value||'';saveRS();toast('Borrador guardado','success');
+}
+
+function pickFile(input,rId){
+  const f=input.files[0];if(!f)return;
+  RS[rId]=RS[rId]||{};RS[rId].archivo=f.name;saveRS();rerender(rId);toast('Documento adjunto: '+f.name,'success');
+}
+function dropFile(ev,rId){
+  ev.preventDefault();document.getElementById('uz-'+rId)?.classList.remove('over');
+  const f=ev.dataTransfer.files[0];if(!f)return;
+  RS[rId]=RS[rId]||{};RS[rId].archivo=f.name;saveRS();rerender(rId);toast('Documento adjunto: '+f.name,'success');
+}
+function quitarFile(rId){if(RS[rId])delete RS[rId].archivo;saveRS();rerender(rId);}
+
+async function envComm(rId,interno){
+  const inp=document.getElementById('ci-'+rId);const msg=inp?.value.trim();
+  if(!msg){toast('Escribe un mensaje','error');return;}
+  const r=await req({action:'addComentario',reporteId:rId,comentario:msg,es_interno:interno});
+  if(r.success){inp.value='';toast(interno?'Comentario guardado':'Mensaje enviado','success');loadComms(rId);}
+  else toast(r.message,'error');
+}
+
+// TIMELINE + COMENTARIOS
+async function loadTL(rId){
+  try{
+    const r=await req({action:'getReportDetail',reportId:rId});if(!r.success)return;
+    const el=document.getElementById('tl-'+rId);if(!el)return;
+    const hist=r.data.historial||[];
+    if(!hist.length){el.innerHTML='<div style="font-size:12px;color:var(--txt3)">Sin historial</div>';return;}
+    el.innerHTML=hist.map((h,i)=>`
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot ${TLC[h.estado_nuevo]||'default'}"></div>${i<hist.length-1?'<div class="tl-line"></div>':''}</div>
+        <div><div class="tl-estado">${EL[h.estado_nuevo]||h.estado_nuevo}</div><div class="tl-quien">${h.usuario_nombre}</div><div class="tl-fecha">${fmt(h.fecha_cambio)}</div>${h.comentario?`<div class="tl-comm">${h.comentario}</div>`:''}</div>
+      </div>`).join('');
+  }catch(e){}
+}
+
+async function loadComms(rId){
+  try{
+    const r=await req({action:'getReportDetail',reportId:rId});if(!r.success)return;
+    const el=document.getElementById('comms-'+rId);if(!el)return;
+    const comms=r.data.comentarios||[];
+    if(!comms.length){el.innerHTML='<div style="font-size:12px;color:var(--txt3);text-align:center">Sin comentarios</div>';return;}
+    el.innerHTML=comms.map(c=>`<div class="comm-box"><div class="comm-auth">${c.usuario_nombre}<span style="font-weight:400;color:var(--txt3);font-size:10px"> ${c.es_interno==='TRUE'?'· Interno':''}</span></div><div class="comm-body">${c.comentario}</div><div class="comm-time">${fmt(c.fecha_comentario)}</div></div>`).join('');
+  }catch(e){}
+}
+
+function toggleCard(id){
+  const body=document.getElementById('body-'+id);const chev=document.getElementById('chev-'+id);
+  const open=body.classList.toggle('open');chev.style.transform=open?'rotate(180deg)':'';
+  if(open){loadTL(id);loadComms(id);}
+}
+
+function rerender(rId){
+  const r=REPS.find(x=>x.id===rId);if(!r)return;
+  const card=document.getElementById('card-'+rId);if(!card)return;
+  const wasOpen=document.getElementById('body-'+rId)?.classList.contains('open');
+  card.outerHTML=cardHTML(r);
+  if(wasOpen){document.getElementById('body-'+rId).classList.add('open');document.getElementById('chev-'+rId).style.transform='rotate(180deg)';loadTL(rId);loadComms(rId);}
+}
+
+function saveRS(){sessionStorage.setItem('repState',JSON.stringify(RS));}
+
+// NOTIFICACIONES REALES
+function renderNotifs(){
+  const data=notifCache;
+  const noLeidas=data.filter(n=>n.leida==='FALSE').length;
+  const dot=document.getElementById('bell-dot');noLeidas>0?dot.classList.add('show'):dot.classList.remove('show');
+  const list=document.getElementById('np-list');
+  if(!data?.length){list.innerHTML='<div class="empty" style="padding:18px"><p>Sin notificaciones</p></div>';return;}
+  list.innerHTML=data.map(n=>`
+    <div class="np-item ${n.leida==='FALSE'?'unread':''}" onclick="markRead('${n.id}')">
+      <div class="np-row">
+        <div class="np-ico" style="color:${NC[n.tipo]||'#fbbf24'}"><i class="fas ${NI_I[n.tipo]||'fa-bell'}"></i></div>
+        <div style="flex:1"><div class="np-msg">${n.mensaje}</div><div class="np-time">${fmt(n.fecha)}</div></div>
+        ${n.leida==='FALSE'?'<div class="np-dot"></div>':''}
+      </div>
+    </div>`).join('');
+}
+
+async function markRead(id){
+  const item=notifCache.find(n=>n.id===id);
+  if(!item||item.leida!=='FALSE'||notifPendingRead.has(id)) return;
+  const prev=item.leida;
+  notifPendingRead.add(id);
+  item.leida='TRUE';
+  renderNotifs();
+  try{
+    const r=await req({action:'marcarNotifLeida',notifId:id});
+    if(!r?.success) throw new Error(r?.message||'No se pudo guardar la notificación.');
+  }catch(_e){
+    item.leida=prev;
+    toast('No se pudo guardar como leída','error');
+    renderNotifs();
+  }finally{
+    notifPendingRead.delete(id);
+  }
+}
+async function marcarTodo(){
+  const snapshot=notifCache.map(n=>({...n}));
+  notifCache=notifCache.map(n=>({...n,leida:'TRUE'}));
+  renderNotifs();
+  try{
+    const r=await req({action:'marcarTodasLeidas'});
+    if(!r?.success) throw new Error(r?.message||'No se pudo marcar todo');
+  }catch(_e){
+    notifCache=snapshot;
+    toast('No se pudo marcar todo como leído','error');
+    renderNotifs();
+  }
+}
+function toggleNP(){
+  const p=document.getElementById('notif-panel');
+  const willOpen=!p.classList.contains('open');
+  p.classList.toggle('open');
+  if(willOpen) cargarNotifs();
+}
+document.addEventListener('click',e=>{
+  const p=document.getElementById('notif-panel');
+  if(p&&!p.contains(e.target)&&!e.target.closest('.bell-wrap'))p.classList.remove('open');
+});
+
+// INACTIVIDAD
+function initInact(){
+  const reset=()=>{clearTimeout(inactT);inactT=setTimeout(showInact,INACT);};
+  ['click','keydown','touchstart','mousemove'].forEach(ev=>document.addEventListener(ev,reset,{passive:true}));
+  reset();
+}
+function showInact(){
+  document.getElementById('inact-ov').classList.add('show');inactS=60;document.getElementById('inact-n').textContent=60;
+  cntT=setInterval(()=>{inactS--;document.getElementById('inact-n').textContent=inactS;if(inactS<=0){clearInterval(cntT);logout();}},1000);
+}
+function resetInact(){clearInterval(cntT);document.getElementById('inact-ov').classList.remove('show');initInact();toast('Sesión extendida','success');}
+
+// NAV
+const TITLES={pendientes:'PENDIENTES DE REVISI"N',sancionados:'CASOS SANCIONADOS',resueltos:'RESUELTOS',rechazados:'NO VÁLIDOS',externos:'CASOS EXTERNOS'};
+function switchSec(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');btn.classList.add('active');
+  document.getElementById('pg-t').textContent=TITLES[id]||id;
+  if(window.innerWidth<=860)document.getElementById('sidebar').classList.remove('open');
+}
+function toggleSB(){document.getElementById('sidebar').classList.toggle('open');}
+
+// UTILS
+function iF(lbl,val){return`<div class="ifield"><div class="if-lbl">${lbl}</div><div class="if-val">${val||'—'}</div></div>`;}
+function fmt(s){if(!s)return'—';const d=new Date(s);if(isNaN(d))return s;return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'});}
+function logout(){sessionStorage.clear();location.href='login.html';}
+function toast(msg,type='info'){
+  const el=document.createElement('div');el.className='t-item';
+  const c={success:'#34d399',error:'#f87171',info:'#60a5fa'};const i={success:'fa-check-circle',error:'fa-times-circle',info:'fa-info-circle'};
+  el.innerHTML=`<i class="fas ${i[type]||i.info}" style="color:${c[type]||c.info}"></i><span>${msg}</span>`;
+  document.getElementById('toast-wrap').appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},3500);
+}
+</script>
+</body>
+</html>
+

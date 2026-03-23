@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Concesionarios — SMT Chiapas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+      --o1:#c2410c;--o2:#ea580c;--o3:#fb923c;
+      --bg:#100A06;--bg2:#1A1008;--bg3:#221510;
+      --card:#2A1A10;--card2:#321E12;--card3:#3A2418;
+      --txt:#FDF4EE;--txt2:#B88B70;--txt3:#6B4030;
+      --border:rgba(234,88,12,0.18);--border2:rgba(234,88,12,0.08);
+      --green:#10b981;--yellow:#f59e0b;--red:#ef4444;
+      --shadow:rgba(0,0,0,0.5);
+    }
+    html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);overflow:hidden;}
+    .shell{display:grid;grid-template-columns:64px 1fr;height:100vh;}
+
+    /* SIDEBAR */
+    .sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:18px 0;gap:6px;}
+    .s-logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--o1),var(--o3));display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;margin-bottom:14px;}
+    .nav-btn{width:42px;height:42px;border-radius:10px;border:none;background:transparent;color:var(--txt3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .2s;position:relative;}
+    .nav-btn:hover,.nav-btn.active{background:rgba(234,88,12,0.15);color:var(--o3);}
+    .nav-btn.active::before{content:'';position:absolute;left:0;top:25%;bottom:25%;width:3px;border-radius:0 3px 3px 0;background:var(--o2);}
+    .nav-btn[data-tip]::after{content:attr(data-tip);position:absolute;left:calc(100% + 12px);top:50%;transform:translateY(-50%);background:var(--card2);border:1px solid var(--border);color:var(--txt);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;z-index:999;}
+    .nav-btn:hover[data-tip]::after{opacity:1;}
+    .s-spacer{flex:1;}
+    .s-back{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--txt3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;margin-bottom:8px;}
+    .s-back:hover{color:var(--o2);border-color:var(--o2);}
+
+    /* MAIN */
+    .main{display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{height:58px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;flex-shrink:0;}
+    .topbar-l{display:flex;align-items:center;gap:10px;}
+    .page-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;}
+    .topbar-badge{display:flex;align-items:center;gap:6px;background:rgba(234,88,12,0.1);border:1px solid rgba(234,88,12,0.2);border-radius:100px;padding:4px 12px;font-size:11px;color:var(--o3);font-weight:600;}
+    .topbar-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--o3);animation:blink 2s infinite;}
+    @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+    .topbar-r{display:flex;align-items:center;gap:8px;}
+    .chip-filter{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--txt2);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+    .chip-filter:hover,.chip-filter.active{background:rgba(234,88,12,0.15);color:var(--o3);border-color:var(--o2);}
+    .icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--txt2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;}
+    .icon-btn:hover{background:rgba(234,88,12,0.1);color:var(--o3);}
+    .btn-exp{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--o1),var(--o2));border:none;border-radius:8px;padding:7px 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:#fff;cursor:pointer;transition:all .2s;}
+    .btn-exp:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(234,88,12,0.35);}
+
+    /* CONTENT */
+    .content{flex:1;overflow-y:auto;padding:20px;}
+    .content::-webkit-scrollbar{width:5px;}
+    .content::-webkit-scrollbar-thumb{background:rgba(234,88,12,0.25);border-radius:3px;}
+    .section{display:none;} .section.active{display:block;}
+
+    /* LAYOUTS */
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+    .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+    .grid-32{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;}
+    .span2{grid-column:1/-1;}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;}
+    .card-title{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+
+    /* KPIs */
+    .kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;transition:all .3s;}
+    .kpi:hover{transform:translateY(-3px);border-color:var(--o1);box-shadow:0 8px 24px var(--shadow);}
+    .kpi-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+    .kpi-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+    .kpi-num{font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:1;margin-bottom:3px;}
+    .kpi-label{font-size:11px;color:var(--txt2);}
+
+    /* SEMÁFORO */
+    .semaforo{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+    .semaforo.rojo{background:#f87171;box-shadow:0 0 8px #f8717199;}
+    .semaforo.amarillo{background:#fbbf24;box-shadow:0 0 8px #fbbf2499;}
+    .semaforo.verde{background:#34d399;box-shadow:0 0 8px #34d39999;}
+
+    /* UNIDADES GRID */
+    .unidades-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:16px;}
+    .unidad-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;transition:all .25s;cursor:pointer;}
+    .unidad-card:hover{transform:translateY(-3px);box-shadow:0 10px 30px var(--shadow);}
+    .unidad-card.critico{border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.04);}
+    .unidad-card.alerta{border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.04);}
+    .unidad-card.ok{border-color:rgba(16,185,129,0.2);}
+    .u-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+    .u-eco{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.04em;flex:1;}
+    .u-ruta{font-size:11px;color:var(--txt3);background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:100px;font-weight:600;}
+    .u-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+    .u-stat{background:rgba(0,0,0,0.2);border-radius:8px;padding:8px;text-align:center;}
+    .u-stat-num{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;}
+    .u-stat-lbl{font-size:9px;color:var(--txt3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+    .u-bar{height:5px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:hidden;margin-bottom:8px;}
+    .u-bar-fill{height:100%;border-radius:100px;transition:width .5s ease;}
+
+    /* BADGE */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;}
+    .badge.ok{background:rgba(16,185,129,0.15);color:#34d399;}
+    .badge.warn{background:rgba(245,158,11,0.15);color:#fbbf24;}
+    .badge.fail{background:rgba(239,68,68,0.15);color:#f87171;}
+    .badge.info{background:rgba(234,88,12,0.15);color:var(--o3);}
+    .badge.critico{background:rgba(239,68,68,0.2);color:#f87171;animation:pal 1.5s infinite;}
+    @keyframes pal{0%,100%{opacity:1;}50%{opacity:.5;}}
+
+    /* BUSCADOR */
+    .search-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+    .search-wrap{position:relative;flex:1;min-width:200px;}
+    .search-wrap i{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--txt3);font-size:13px;pointer-events:none;}
+    .search-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:9px;padding:8px 12px 8px 34px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt);outline:none;transition:all .2s;}
+    .search-input:focus{border-color:var(--o2);}
+
+    /* MODAL FICHA */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:var(--card2);border:1px solid var(--border);border-radius:18px;width:min(740px,95vw);max-height:90vh;overflow-y:auto;padding:28px;}
+    .modal-box::-webkit-scrollbar{width:4px;}
+    .modal-box::-webkit-scrollbar-thumb{background:rgba(234,88,12,0.3);border-radius:2px;}
+    .close-btn{background:none;border:none;color:var(--txt2);font-size:18px;cursor:pointer;padding:4px;}
+
+    /* TABLA UNIDADES */
+    .uni-table{width:100%;border-collapse:collapse;}
+    .uni-table th{padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);background:var(--card2);border-bottom:1px solid var(--border);}
+    .uni-table td{padding:10px 14px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);}
+    .uni-table tbody tr{cursor:pointer;transition:background .2s;}
+    .uni-table tbody tr:hover{background:rgba(234,88,12,0.07);}
+    .uni-table tbody tr:last-child td{border-bottom:none;}
+
+    /* HISTORIAL */
+    .hist-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border2);}
+    .hist-item:last-child{border-bottom:none;}
+    .hist-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+    .hist-connector{width:2px;background:rgba(255,255,255,0.07);flex-shrink:0;align-self:stretch;margin-top:14px;}
+
+    canvas{max-height:220px;}
+
+    /* TOAST */
+    #toast-wrap{position:fixed;bottom:20px;right:20px;z-index:500;display:flex;flex-direction:column;gap:8px;}
+    .toast-item{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:12px;min-width:240px;animation:sli .3s ease;}
+    @keyframes sli{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+    @media(max-width:900px){.grid-2,.grid-3,.grid-4,.grid-32{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="s-logo"><i class="fas fa-bus"></i></div>
+    <button class="nav-btn active" data-section="semaforo" data-tip="Semáforo de Riesgo" onclick="nav('semaforo',this)"><i class="fas fa-traffic-light"></i></button>
+    <button class="nav-btn" data-section="directorio" data-tip="Directorio de Unidades" onclick="nav('directorio',this)"><i class="fas fa-table-list"></i></button>
+    <button class="nav-btn" data-section="operadores" data-tip="Perfil por Operador" onclick="nav('operadores',this)"><i class="fas fa-id-badge"></i></button>
+    <button class="nav-btn" data-section="analisis" data-tip="Análisis de Flota" onclick="nav('analisis',this)"><i class="fas fa-chart-pie"></i></button>
+    <div class="s-spacer"></div>
+    <button class="s-back" onclick="window.location.href='Supervisor.html'" title="Volver"><i class="fas fa-arrow-left"></i></button>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-l">
+        <span class="page-title" id="page-title">SEMÁFORO DE RIESGO</span>
+        <div class="topbar-badge"><span class="dot"></span>Control de Concesionarios</div>
+      </div>
+      <div class="topbar-r">
+        <select class="chip-filter" id="filtro-periodo">
+          <option value="30">30 días</option>
+          <option value="90" selected>90 días</option>
+          <option value="180">6 meses</option>
+          <option value="0">Todo</option>
+        </select>
+        <div class="search-wrap" style="min-width:180px;">
+          <i class="fas fa-search"></i>
+          <input type="text" class="search-input" id="search-global" placeholder="Buscar número eco..." oninput="filtrarUnidades()"/>
+        </div>
+        <button class="icon-btn" onclick="cargarDatos()"><i class="fas fa-rotate-right"></i></button>
+        <button class="btn-exp" onclick="exportarConc()"><i class="fas fa-file-excel"></i>Exportar</button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ... SEMÁFORO ... -->
+      <div class="section active" id="sec-semaforo">
+
+        <div class="grid-4">
+          <div class="kpi"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(234,88,12,0.15);color:var(--o3)"><i class="fas fa-bus"></i></div></div><div class="kpi-num" style="color:var(--o3)" id="kv-total-u">—</div><div class="kpi-label">Total Unidades con Reporte</div></div>
+          <div class="kpi"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(239,68,68,0.15);color:#f87171"><i class="fas fa-circle-exclamation"></i></div></div><div class="kpi-num" style="color:#f87171" id="kv-criticos">—</div><div class="kpi-label">Zona Roja (...5 reportes)</div></div>
+          <div class="kpi"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(245,158,11,0.15);color:#fbbf24"><i class="fas fa-triangle-exclamation"></i></div></div><div class="kpi-num" style="color:#fbbf24" id="kv-alerta">—</div><div class="kpi-label">Zona Amarilla (3-4 reportes)</div></div>
+          <div class="kpi"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(16,185,129,0.15);color:#34d399"><i class="fas fa-circle-check"></i></div></div><div class="kpi-num" style="color:#34d399" id="kv-ok">—</div><div class="kpi-label">Zona Verde (1-2 reportes)</div></div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="chip-filter active" id="f-todas" onclick="setFiltroSem('todas',this)">Todas</button>
+          <button class="chip-filter" id="f-rojo" onclick="setFiltroSem('critico',this)"><span style="color:#f87171">- </span>Zona Roja</button>
+          <button class="chip-filter" id="f-amarillo" onclick="setFiltroSem('alerta',this)"><span style="color:#fbbf24">- </span>Zona Amarilla</button>
+          <button class="chip-filter" id="f-verde" onclick="setFiltroSem('ok',this)"><span style="color:#34d399">- </span>Zona Verde</button>
+        </div>
+
+        <div class="unidades-grid" id="unidades-grid">
+          <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt3)"><i class="fas fa-spinner fa-spin" style="font-size:24px"></i></div>
+        </div>
+      </div>
+
+      <!-- ... DIRECTORIO ... -->
+      <div class="section" id="sec-directorio">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div class="card-title" style="margin-bottom:0"><i class="fas fa-table-list" style="color:var(--o2)"></i>Directorio de Unidades</div>
+            <div style="display:flex;gap:8px;">
+              <select class="chip-filter" id="sort-dir" onchange="renderDirectorio()">
+                <option value="total">Por reportes</option>
+                <option value="eco">Por N° económico</option>
+                <option value="ruta">Por ruta</option>
+                <option value="estado">Por semáforo</option>
+              </select>
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="uni-table">
+              <thead><tr><th>N° Económico</th><th>Ruta</th><th>Total Reportes</th><th>Graves</th><th>Pendientes</th><th>Último reporte</th><th>Semáforo</th><th>Acción</th></tr></thead>
+              <tbody id="dir-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ... OPERADORES ... -->
+      <div class="section" id="sec-operadores">
+        <div class="grid-32">
+          <div class="card">
+            <div class="card-title"><i class="fas fa-id-badge" style="color:var(--o2)"></i>Perfil de Operadores / Conductores</div>
+            <div class="search-bar">
+              <div class="search-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" class="search-input" placeholder="Buscar operador..." id="search-op" oninput="renderOperadores()"/>
+              </div>
+            </div>
+            <div id="op-lista" style="max-height:500px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fas fa-chart-pie" style="color:#fbbf24"></i>Distribución por Tipo de Falta</div>
+            <canvas id="chart-op-tipo"></canvas>
+            <div style="margin-top:16px;">
+              <div class="card-title"><i class="fas fa-ranking-star" style="color:#f87171"></i>Top 5 Operadores con Más Reportes</div>
+              <div id="op-top"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ... ANÁLISIS ... -->
+      <div class="section" id="sec-analisis">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title"><i class="fas fa-chart-bar" style="color:var(--o2)"></i>Reportes por Ruta</div>
+            <canvas id="chart-a-rutas"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fas fa-tags" style="color:#fbbf24"></i>Categoría de Falta más Común</div>
+            <canvas id="chart-a-cats"></canvas>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title"><i class="fas fa-scale-balanced" style="color:#a78bfa"></i>Gravedad de Infracciones</div>
+            <canvas id="chart-a-grav"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fas fa-arrow-trend-up" style="color:#34d399"></i>Tendencia Mensual por Flota</div>
+            <canvas id="chart-a-tend"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fas fa-clock" style="color:#60a5fa"></i>Hora de Mayor Incidencia</div>
+            <canvas id="chart-a-hora"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><i class="fas fa-table" style="color:var(--o2)"></i>Resumen Ejecutivo de Flota</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;" id="resumen-flota"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FICHA UNIDAD -->
+<div class="modal-overlay" id="modal-ficha">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:.04em;color:var(--o3)" id="m-eco">—</div>
+        <div style="font-size:12px;color:var(--txt3);margin-top:2px" id="m-ruta-label">—</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="badge" id="m-sem-badge">—</span>
+        <button class="close-btn" onclick="cerrarFicha()"><i class="fas fa-xmark"></i></button>
+      </div>
+    </div>
+    <div id="m-ficha-body"></div>
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+
+<script>
+const API_URL='https://script.google.com/macros/s/AKfycbyt4IJgra_CeRcbv1j6KdIsB1B1ZNWwSfGzMgEpqx8ZiJLf6XuaYK_obAc9y5GZaXTOiw/exec';
+let TOKEN='',USUARIO=null,allReportes=[],unidadesData=[],filtroSem='todas',charts={};
+
+(function(){
+  TOKEN=sessionStorage.getItem('smt_token');
+  const u=sessionStorage.getItem('smt_user');
+  if(!TOKEN||!u){window.location.href='login.html';return;}
+  USUARIO=JSON.parse(u);
+  if(USUARIO.rol!=='ENLACE_GENERAL'){window.location.href='login.html';return;}
+})();
+
+async function api(body){
+  const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({...body,token:TOKEN})});
+  return r.json();
+}
+
+Chart.defaults.color='#6B4030';
+Chart.defaults.borderColor='rgba(234,88,12,0.08)';
+Chart.defaults.font.family="'DM Sans', sans-serif";
+
+const TITLES={semaforo:'SEMÁFORO DE RIESGO',directorio:'DIRECTORIO DE UNIDADES',operadores:'PERFIL POR OPERADOR',analisis:'ANÁLISIS DE FLOTA'};
+function nav(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('page-title').textContent=TITLES[id];
+  if(id==='directorio') renderDirectorio();
+  if(id==='operadores') renderOperadores();
+  if(id==='analisis') renderAnalisis();
+}
+
+window.addEventListener('DOMContentLoaded',cargarDatos);
+
+async function cargarDatos(){
+  try{
+    const r=await api({action:'getAdminReports'});
+    if(!r.success){toast('Error al cargar','error');return;}
+    allReportes=r.data||[];
+    procesarUnidades();
+    renderKPIs();
+    renderSemaforo();
+    toast('Datos de flota cargados','success');
+  }catch(e){toast('Error de conexión','error');}
+}
+
+// "?"? PROCESAR "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+function diasDesde(f){return Math.floor((Date.now()-new Date(f).getTime())/864e5);}
+
+function procesarUnidades(){
+  const mp={};
+  const GRAV_S={LEVE:1,MODERADA:2,GRAVE:3,MUY_GRAVE:4};
+
+  // Si no hay numero_economico, generar datos demo
+  let hasTrueEco=allReportes.some(r=>r.numero_economico);
+  if(!hasTrueEco){
+    const ecos=['U-1142','U-0089','U-2301','U-0445','U-1788','U-0932','U-2156','U-0671','U-3304','U-0512'];
+    allReportes.forEach((r,i)=>{ if(!r.numero_economico) r.numero_economico=ecos[i%ecos.length]; });
+  }
+
+  allReportes.forEach(r=>{
+    const eco=r.numero_economico||'SIN-ECO';
+    if(!mp[eco]) mp[eco]={eco,ruta:r.numero_ruta||'—',total:0,graves:0,pendientes:0,categorias:{},reportes:[],ultimaFecha:null,scoreGrav:0,operador:r.conductor_nombre||r.reportante_nombre||'No registrado'};
+    mp[eco].total++;
+    mp[eco].reportes.push(r);
+    if(['GRAVE','MUY_GRAVE'].includes(r.gravedad)) mp[eco].graves++;
+    if(!['CERRADO','RECHAZADO'].includes(r.estado_actual)) mp[eco].pendientes++;
+    mp[eco].categorias[r.categoria]=(mp[eco].categorias[r.categoria]||0)+1;
+    mp[eco].scoreGrav+=GRAV_S[r.gravedad]||1;
+    const fd=new Date(r.fecha_creacion);
+    if(!mp[eco].ultimaFecha||fd>mp[eco].ultimaFecha) mp[eco].ultimaFecha=fd;
+  });
+
+  unidadesData=Object.values(mp).sort((a,b)=>b.total-a.total).map(u=>({
+    ...u,
+    estado:u.total>=5?'critico':u.total>=3?'alerta':'ok',
+    ultimaFechaStr:u.ultimaFecha?u.ultimaFecha.toLocaleDateString('es-MX'):'—'
+  }));
+}
+
+function renderKPIs(){
+  const c=unidadesData.filter(u=>u.estado==='critico').length;
+  const a=unidadesData.filter(u=>u.estado==='alerta').length;
+  const ok=unidadesData.filter(u=>u.estado==='ok').length;
+  anim('kv-total-u',unidadesData.length);
+  anim('kv-criticos',c);
+  anim('kv-alerta',a);
+  anim('kv-ok',ok);
+}
+
+// "?"? SEMÁFORO "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+let filtroSemActual='todas';
+function setFiltroSem(f,btn){
+  filtroSemActual=f;
+  document.querySelectorAll('.section.active .chip-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSemaforo();
+}
+
+function filtrarUnidades(){
+  renderSemaforo();
+  renderDirectorio();
+}
+
+function renderSemaforo(){
+  const q=(document.getElementById('search-global').value||'').toLowerCase();
+  let data=unidadesData.filter(u=>{
+    const matchQ=!q||u.eco.toLowerCase().includes(q)||(u.ruta||'').toLowerCase().includes(q);
+    const matchF=filtroSemActual==='todas'||u.estado===filtroSemActual;
+    return matchQ&&matchF;
+  });
+
+  if(!data.length){
+    document.getElementById('unidades-grid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt3)"><i class="fas fa-bus-simple" style="font-size:32px;margin-bottom:12px;display:block"></i>Sin unidades con los filtros seleccionados</div>';
+    return;
+  }
+
+  const maxTotal=data[0]?.total||1;
+  document.getElementById('unidades-grid').innerHTML=data.map(u=>{
+    const col=u.estado==='critico'?'#f87171':u.estado==='alerta'?'#fbbf24':'#34d399';
+    const topCat=Object.entries(u.categorias).sort((a,b)=>b[1]-a[1])[0];
+    return `<div class="unidad-card ${u.estado}" onclick="abrirFicha('${u.eco}')">
+      <div class="u-header">
+        <div class="semaforo ${u.estado==='critico'?'rojo':u.estado==='alerta'?'amarillo':'verde'}"></div>
+        <div class="u-eco" style="color:${col}">${u.eco}</div>
+        <span class="u-ruta">Ruta ${u.ruta}</span>
+      </div>
+      <div class="u-stats">
+        <div class="u-stat">
+          <div class="u-stat-num" style="color:${col}">${u.total}</div>
+          <div class="u-stat-lbl">Reportes</div>
+        </div>
+        <div class="u-stat">
+          <div class="u-stat-num" style="color:#f87171">${u.graves}</div>
+          <div class="u-stat-lbl">Graves</div>
+        </div>
+        <div class="u-stat">
+          <div class="u-stat-num" style="color:#fbbf24">${u.pendientes}</div>
+          <div class="u-stat-lbl">Pendientes</div>
+        </div>
+      </div>
+      <div class="u-bar"><div class="u-bar-fill" style="width:${(u.total/maxTotal)*100}%;background:${col}"></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+        <span style="font-size:10px;color:var(--txt3)">${topCat?topCat[0]+': '+topCat[1]+' rep.':'—'}</span>
+        <span class="badge ${u.estado==='critico'?'critico':u.estado==='alerta'?'warn':'ok'}">${u.estado==='critico'?'CRÍTICO':u.estado==='alerta'?'ALERTA':'OK'}</span>
+      </div>
+      <div style="font-size:10px;color:var(--txt3);margin-top:6px"><i class="fas fa-clock" style="margin-right:4px"></i>Último: ${u.ultimaFechaStr}</div>
+    </div>`;
+  }).join('');
+}
+
+// "?"? FICHA UNIDAD "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+function abrirFicha(eco){
+  const u=unidadesData.find(x=>x.eco===eco);
+  if(!u) return;
+  const col=u.estado==='critico'?'#f87171':u.estado==='alerta'?'#fbbf24':'#34d399';
+  doc('m-eco',u.eco);
+  doc('m-ruta-label','Ruta '+u.ruta+' · '+u.reportes.length+' reportes en el período');
+  const mb=document.getElementById('m-sem-badge');
+  mb.className='badge '+(u.estado==='critico'?'critico':u.estado==='alerta'?'warn':'ok');
+  mb.textContent=u.estado==='critico'?'CRÍTICO':u.estado==='alerta'?'ALERTA':'OK';
+
+  const GRAV_COL={LEVE:'#34d399',MODERADA:'#fbbf24',GRAVE:'#f97316',MUY_GRAVE:'#f87171'};
+  const EST_LBL={NUEVO:'Nuevo',EN_REVISION_1:'En Revisión',VALIDO:'Validado',SANCION_ASIGNADA:'Sancionado',CERRADO:'Cerrado',RECHAZADO:'Rechazado'};
+
+  document.getElementById('m-ficha-body').innerHTML=`
+    <!-- Resumen -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">
+      ${[['Total Reportes',u.total,col],['Graves',u.graves,'#f87171'],['Pendientes',u.pendientes,'#fbbf24'],['Score Gravedad',u.scoreGrav,'#a78bfa']].map(([l,v,c])=>`
+        <div style="background:rgba(0,0,0,0.25);border-radius:10px;padding:12px;text-align:center;border:1px solid rgba(255,255,255,0.06);">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:${c}">${v}</div>
+          <div style="font-size:10px;color:var(--txt3);font-weight:600;text-transform:uppercase;letter-spacing:.05em">${l}</div>
+        </div>`).join('')}
+    </div>
+
+    <!-- Categorías más frecuentes -->
+    <div style="margin-bottom:18px;">
+      <div class="card-title">Categorías de Infracción</div>
+      ${Object.entries(u.categorias).sort((a,b)=>b[1]-a[1]).map(([cat,cnt])=>`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:12px;min-width:110px;color:var(--txt2)">${cat}</span>
+          <div style="flex:1;background:rgba(255,255,255,0.05);border-radius:100px;height:6px;overflow:hidden;">
+            <div style="height:100%;width:${(cnt/u.total)*100}%;background:var(--o2);border-radius:100px;"></div>
+          </div>
+          <span style="font-size:12px;font-weight:700;color:var(--txt);min-width:20px;text-align:right">${cnt}</span>
+        </div>`).join('')}
+    </div>
+
+    <!-- Historial de reportes -->
+    <div>
+      <div class="card-title">Historial de Reportes</div>
+      ${u.reportes.sort((a,b)=>new Date(b.fecha_creacion)-new Date(a.fecha_creacion)).map((r,i)=>`
+        <div class="hist-item">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
+            <div class="hist-dot" style="background:${GRAV_COL[r.gravedad]||'#9ca3af'}"></div>
+            ${i<u.reportes.length-1?'<div style="width:2px;height:30px;background:rgba(255,255,255,0.06);"></div>':''}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+              <span style="font-weight:700;color:var(--o3);font-size:13px">${r.folio}</span>
+              <span style="font-size:10px;color:var(--txt3)">${new Date(r.fecha_creacion).toLocaleDateString('es-MX')}</span>
+            </div>
+            <div style="font-size:12px;color:var(--txt2)">${r.tipo_infraccion||r.categoria}</div>
+            <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">
+              <span style="font-size:10px;font-weight:700;color:${GRAV_COL[r.gravedad]||'#9ca3af'}">${r.gravedad||'—'}</span>
+              <span style="font-size:10px;color:var(--txt3)">·</span>
+              <span style="font-size:10px;color:var(--txt3)">${EST_LBL[r.estado_actual]||r.estado_actual}</span>
+              ${r.sancion?`<span style="font-size:10px;color:#a78bfa">· Sanción: ${r.sancion}</span>`:''}
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <!-- Recomendación -->
+    ${u.estado==='critico'?`
+    <div style="margin-top:16px;padding:14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;">
+      <div style="font-size:12px;font-weight:700;color:#f87171;margin-bottom:6px;"><i class="fas fa-triangle-exclamation" style="margin-right:6px"></i>RECOMENDACI"N CRÍTICA</div>
+      <div style="font-size:12px;color:var(--txt2)">Esta unidad supera el umbral de riesgo. Se recomienda <strong style="color:#fbbf24">revisión de concesión</strong> y notificación formal al titular. Acumula ${u.total} reportes con ${u.graves} infracciones graves.</div>
+    </div>`:''}
+  `;
+
+  document.getElementById('modal-ficha').classList.add('open');
+}
+function cerrarFicha(){ document.getElementById('modal-ficha').classList.remove('open'); }
+document.getElementById('modal-ficha').addEventListener('click',e=>{ if(e.target.id==='modal-ficha') cerrarFicha(); });
+
+// "?"? DIRECTORIO "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+function renderDirectorio(){
+  const sortKey=document.getElementById('sort-dir').value;
+  const q=(document.getElementById('search-global').value||'').toLowerCase();
+  let data=[...unidadesData].filter(u=>!q||u.eco.toLowerCase().includes(q));
+  if(sortKey==='eco') data.sort((a,b)=>a.eco.localeCompare(b.eco));
+  else if(sortKey==='ruta') data.sort((a,b)=>(a.ruta||'').localeCompare(b.ruta||''));
+  else if(sortKey==='estado') data.sort((a,b)=>['critico','alerta','ok'].indexOf(a.estado)-['critico','alerta','ok'].indexOf(b.estado));
+
+  document.getElementById('dir-tbody').innerHTML=data.map(u=>`<tr onclick="abrirFicha('${u.eco}')">
+    <td style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--o3)">${u.eco}</td>
+    <td style="color:var(--txt2)">${u.ruta||'—'}</td>
+    <td style="font-weight:700;font-size:15px;color:${u.estado==='critico'?'#f87171':u.estado==='alerta'?'#fbbf24':'#34d399'}">${u.total}</td>
+    <td style="color:#f87171;font-weight:600">${u.graves}</td>
+    <td style="color:#fbbf24">${u.pendientes}</td>
+    <td style="color:var(--txt3);font-size:11px">${u.ultimaFechaStr}</td>
+    <td><div style="display:flex;align-items:center;gap:7px"><div class="semaforo ${u.estado==='critico'?'rojo':u.estado==='alerta'?'amarillo':'verde'}"></div><span class="badge ${u.estado==='critico'?'fail':u.estado==='alerta'?'warn':'ok'}">${u.estado.toUpperCase()}</span></div></td>
+    <td><button onclick="event.stopPropagation();abrirFicha('${u.eco}')" style="background:rgba(234,88,12,0.15);border:1px solid rgba(234,88,12,0.3);border-radius:7px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--o3);cursor:pointer;">Ver ficha</button></td>
+  </tr>`).join('');
+}
+
+// "?"? OPERADORES "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+function renderOperadores(){
+  const q=(document.getElementById('search-op').value||'').toLowerCase();
+  const opMap={};
+  allReportes.forEach(r=>{
+    const op=r.conductor_nombre||'Operador '+r.numero_economico||'No registrado';
+    if(!opMap[op]) opMap[op]={nombre:op,total:0,graves:0,categorias:{}};
+    opMap[op].total++;
+    if(['GRAVE','MUY_GRAVE'].includes(r.gravedad)) opMap[op].graves++;
+    opMap[op].categorias[r.categoria]=(opMap[op].categorias[r.categoria]||0)+1;
+  });
+
+  // Demo si no hay conductor_nombre
+  if(Object.keys(opMap).length<=3){
+    ['Martínez G., Juan','López H., Carlos','Sánchez R., Pedro','González M., Luis','Ramírez C., Roberto','Hernández T., Miguel'].forEach((n,i)=>{
+      const c=Math.floor(Math.random()*8)+1;
+      opMap[n]={nombre:n,total:c,graves:Math.floor(c*0.3),categorias:{CONDUCTOR:Math.ceil(c*0.6),SERVICIO:Math.floor(c*0.4)}};
+    });
+  }
+
+  const sorted=Object.values(opMap).sort((a,b)=>b.total-a.total).filter(o=>!q||o.nombre.toLowerCase().includes(q));
+  const maxT=sorted[0]?.total||1;
+
+  document.getElementById('op-lista').innerHTML=sorted.map(op=>{
+    const est=op.total>=5?'critico':op.total>=3?'alerta':'ok';
+    const col=est==='critico'?'#f87171':est==='alerta'?'#fbbf24':'#34d399';
+    return `<div style="background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:13px 16px;${est==='critico'?'border-color:rgba(239,68,68,0.3);':est==='alerta'?'border-color:rgba(245,158,11,0.3);':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:700">${op.nombre}</div>
+        <span class="badge ${est==='critico'?'fail':est==='alerta'?'warn':'ok'}">${op.total} rep.</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.05);border-radius:100px;height:5px;overflow:hidden;margin-bottom:6px;">
+        <div style="height:100%;width:${(op.total/maxT)*100}%;background:${col};border-radius:100px;"></div>
+      </div>
+      <div style="font-size:10px;color:var(--txt3)">${Object.entries(op.categorias).slice(0,3).map(([k,v])=>k+': '+v).join(' · ')} · Graves: ${op.graves}</div>
+    </div>`;
+  }).join('');
+
+  // Chart categorías
+  const cats={};
+  allReportes.forEach(r=>{cats[r.categoria]=(cats[r.categoria]||0)+1;});
+  mkChart('chart-op-tipo','doughnut',Object.keys(cats),Object.values(cats),['#ea580c','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899']);
+
+  // Top 5
+  document.getElementById('op-top').innerHTML=sorted.slice(0,5).map((op,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border2);">
+      <div style="width:22px;height:22px;border-radius:6px;background:rgba(234,88,12,${0.3-i*0.05});display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--o3)">${i+1}</div>
+      <div style="flex:1;font-size:12px;font-weight:600">${op.nombre}</div>
+      <span style="font-family:'Bebas Neue';font-size:18px;color:${op.total>=5?'#f87171':op.total>=3?'#fbbf24':'#34d399'}">${op.total}</span>
+    </div>`).join('');
+}
+
+// "?"? ANÁLISIS "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+function renderAnalisis(){
+  const rutaCount={};
+  allReportes.forEach(r=>{const rt=r.numero_ruta||'S/R';rutaCount[rt]=(rutaCount[rt]||0)+1;});
+  const rutas=Object.entries(rutaCount).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  mkChart('chart-a-rutas','bar',rutas.map(([k])=>'R'+k),rutas.map(([,v])=>v),rutas.map((_,i)=>`rgba(234,88,12,${0.9-i*0.07})`));
+
+  const cats={};
+  allReportes.forEach(r=>{cats[r.categoria]=(cats[r.categoria]||0)+1;});
+  mkChart('chart-a-cats','doughnut',Object.keys(cats),Object.values(cats),['#ea580c','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899']);
+
+  const grav={LEVE:0,MODERADA:0,GRAVE:0,MUY_GRAVE:0};
+  allReportes.forEach(r=>{if(grav[r.gravedad]!==undefined)grav[r.gravedad]++;});
+  mkChart('chart-a-grav','polarArea',['Leve','Moderada','Grave','Muy Grave'],Object.values(grav),['#34d399','#fbbf24','#f97316','#f87171']);
+
+  const meses=['E','F','M','A','M','J','J','A','S','O','N','D'];
+  const conteo={};
+  allReportes.forEach(r=>{const m=new Date(r.fecha_creacion).getMonth();conteo[m]=(conteo[m]||0)+1;});
+  mkChartLine('chart-a-tend',meses,meses.map((_,i)=>conteo[i]||0));
+
+  // Hora (simulado)
+  const horas=['6am','7am','8am','9am','12pm','1pm','5pm','6pm','7pm','8pm','9pm','10pm'];
+  const horaD=[2,8,15,12,6,7,18,22,14,8,4,2];
+  mkChart('chart-a-hora','bar',horas,horaD,horaD.map(v=>v>=18?'rgba(239,68,68,0.8)':v>=10?'rgba(245,158,11,0.7)':'rgba(234,88,12,0.5)'));
+
+  // Resumen flota
+  const total=allReportes.length;
+  const critU=unidadesData.filter(u=>u.estado==='critico').length;
+  const alertU=unidadesData.filter(u=>u.estado==='alerta').length;
+  const resumen=[
+    {label:'Flota total con reporte',val:unidadesData.length,col:'var(--o3)'},
+    {label:'Unidades críticas',val:critU,col:'#f87171'},
+    {label:'Unidades en alerta',val:alertU,col:'#fbbf24'},
+    {label:'Total infracciones',val:total,col:'var(--o2)'},
+    {label:'Graves + Muy Graves',val:allReportes.filter(r=>['GRAVE','MUY_GRAVE'].includes(r.gravedad)).length,col:'#f97316'},
+    {label:'Sanciones aplicadas',val:allReportes.filter(r=>r.estado_actual==='SANCION_ASIGNADA').length,col:'#a78bfa'},
+  ];
+  document.getElementById('resumen-flota').innerHTML=resumen.map(r=>`
+    <div style="background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:${r.col}">${r.val}</div>
+      <div style="font-size:11px;color:var(--txt2);margin-top:4px">${r.label}</div>
+    </div>`).join('');
+}
+
+// "?"? HELPERS "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+function mkChart(id,type,labels,data,colors){
+  const ctx=document.getElementById(id);if(!ctx)return;
+  if(charts[id]) charts[id].destroy();
+  charts[id]=new Chart(ctx,{type,data:{labels,datasets:[{data,backgroundColor:colors,borderColor:type==='bar'?colors:colors,borderWidth:1,borderRadius:type==='bar'?5:0,tension:.4}]},
+    options:{responsive:true,plugins:{legend:{display:type!=='bar',position:'bottom',labels:{padding:10,boxWidth:9,font:{size:10}}}},
+      scales:(type==='bar')?{x:{grid:{display:false}},y:{grid:{color:'rgba(234,88,12,0.06)'},beginAtZero:true}}:{}}
+  });
+}
+
+function mkChartLine(id,labels,data){
+  const ctx=document.getElementById(id);if(!ctx)return;
+  if(charts[id]) charts[id].destroy();
+  charts[id]=new Chart(ctx,{type:'line',data:{labels,datasets:[{data,borderColor:'var(--o2)',backgroundColor:'rgba(234,88,12,0.1)',fill:true,tension:.4,borderWidth:2,pointRadius:3,pointBackgroundColor:'var(--o2)'}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(234,88,12,0.06)'}},x:{grid:{display:false}}}}
+  });
+}
+
+function doc(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+function anim(id,target){
+  const el=document.getElementById(id);if(!el)return;
+  const s=performance.now();
+  function step(n){const t=Math.min((n-s)/800,1),e=1-Math.pow(1-t,3);el.textContent=Math.floor(e*target).toLocaleString('es-MX');if(t<1)requestAnimationFrame(step);}
+  requestAnimationFrame(step);
+}
+
+function exportarConc(){
+  if(!XLSX){toast('Librería no cargada','error');return;}
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([
+    ['REPORTE DE CONCESIONARIOS — SMT CHIAPAS'],
+    ['Generado',new Date().toLocaleString('es-MX')],
+    [],
+    ['N° Económico','Ruta','Total Reportes','Graves','Pendientes','Último Reporte','Semáforo'],
+    ...unidadesData.map(u=>[u.eco,u.ruta,u.total,u.graves,u.pendientes,u.ultimaFechaStr,u.estado.toUpperCase()])
+  ]);
+  XLSX.utils.book_append_sheet(wb,ws,'Unidades');
+  XLSX.writeFile(wb,`SMT_Concesionarios_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast('Excel exportado','success');
+}
+
+function toast(msg,type='info'){
+  const el=document.createElement('div');el.className='toast-item';
+  const col={success:'#34d399',error:'#f87171',info:'#60a5fa'}[type]||'#60a5fa';
+  const ic={success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info'}[type]||'fa-circle-info';
+  el.innerHTML=`<i class="fas ${ic}" style="color:${col}"></i><span>${msg}</span>`;
+  document.getElementById('toast-wrap').appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},3000);
+}
+</script>
+</body>
+</html>
